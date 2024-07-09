@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/thantko20/curler/curler"
 )
 
 // App struct
@@ -24,4 +26,12 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) Send(requestOptions *curler.RequestOptions) curler.Response {
+	result, err := curler.Curl(*requestOptions)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }

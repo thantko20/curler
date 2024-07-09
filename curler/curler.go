@@ -2,20 +2,21 @@ package curler
 
 import (
 	"io"
+	"log"
 	"net/http"
 )
 
 type RequestOptions struct {
-	Method  string
-	Headers map[string]string
-	Url     string
-	Body    interface{}
+	Method  string            `json:"method"`
+	Headers map[string]string `json:"headers"`
+	Url     string            `json:"url"`
+	Body    interface{}       `json:"body"`
 }
 
 type Response struct {
-	Body        interface{}
-	ContentType string
-	StatusCode  int
+	Body        interface{} `json:"body"`
+	ContentType string      `json:"contentType"`
+	StatusCode  int         `json:"statusCode"`
 }
 
 func Curl(opts RequestOptions) (Response, error) {
@@ -34,6 +35,9 @@ func Curl(opts RequestOptions) (Response, error) {
 	}
 	defer res.Body.Close()
 	payload, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return Response{
 		Body:        string(payload),
 		ContentType: res.Header.Get("Content-Type"),
