@@ -15,7 +15,7 @@
 	let selectedMethodOption: HttpMethodOption | undefined = { label: 'GET', value: 'GET' };
 	let response = '';
 	let loading = false;
-	let url = 'https://dummyjson.com/image/200x100';
+	let url = 'https://dummyjson.com/product';
 	let imgSrc = '';
 
 	async function send() {
@@ -30,20 +30,22 @@
 				'Content-Type': 'application/json'
 			}
 		}).finally(() => (loading = false));
-		// response = JSON.stringify(body, null, 4);
-		if (contentType.startsWith('image/')) {
-			let binaryLength = body.length;
-			let bytes = new Uint8Array(binaryLength);
-
-			for (let i = 0; i < binaryLength; i++) {
-				bytes[i] = body.charCodeAt(i);
-			}
-
-			// Create a Blob from the byte array
-			let blob = new Blob([bytes], { type: contentType });
-			console.log(await blob.text());
-			imgSrc = URL.createObjectURL(blob);
+		if (contentType.startsWith('application/json')) {
+			response = JSON.stringify(JSON.parse(body), null, 4);
 		}
+		// will only support json for now :D
+		// if (contentType.startsWith('image/')) {
+		// 	const bsLength = body.length;
+		// 	let bytes = new Uint8Array(bsLength);
+
+		// 	for (let i = 0; i < bsLength; i++) {
+		// 		bytes[i] = body.charCodeAt(i);
+		// 	}
+
+		// 	// Create a Blob from the byte array
+		// 	let blob = new Blob([bytes], { type: contentType });
+		// 	imgSrc = URL.createObjectURL(blob);
+		// }
 	}
 
 	async function onSelectedChange(val: HttpMethodOption | undefined) {
@@ -80,5 +82,5 @@
 {/if}
 
 {#if imgSrc}
-	<img src={imgSrc} width="100" height="100" />
+	<img src={imgSrc} alt="response" width="100" height="100" />
 {/if}
