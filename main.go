@@ -6,9 +6,10 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-//go:embed all:frontend/dist
+//go:embed all:frontend/build
 var assets embed.FS
 
 func main() {
@@ -27,6 +28,9 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+		},
+		Windows: &windows.Options{
+			Theme: windows.Light,
 		},
 	})
 

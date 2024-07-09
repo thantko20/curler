@@ -9,5 +9,6 @@
   "author": {
     "name": "Thant Ko Zaw",
     "email": "thantmkou10@gmail.com"
-  }
+  },
+  "wailsjsdir": "./frontend/src/lib"
 }
