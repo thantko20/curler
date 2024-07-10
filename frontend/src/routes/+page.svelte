@@ -14,6 +14,7 @@
 
 	let editorEl: HTMLDivElement;
 	let editorView: EditorView;
+	let imgEl: HTMLImageElement;
 
 	onMount(() => {
 		editorView = new EditorView({
@@ -38,7 +39,11 @@
 	async function send() {
 		if (!url || !selectedValue) return;
 		loading = true;
-		const { body, contentType } = await Send({
+		const {
+			body: encoded,
+			contentType,
+			size
+		} = await Send({
 			method: selectedValue,
 			url,
 			body: selectedValue === 'POST' ? JSON.stringify({ name: 'New Product' }) : undefined,
@@ -46,9 +51,16 @@
 				'Content-Type': 'application/json'
 			}
 		}).finally(() => (loading = false));
+		const body = encoded ? atob(encoded) : '';
 		if (contentType.startsWith('application/json')) {
 			response = JSON.stringify(JSON.parse(body), null, 2);
 			editorView.setState(createEditorState(response));
+		} else if (contentType.startsWith('image/')) {
+			let bytes = new Uint8Array(body.length);
+			for (var i = 0; i < body.length; i++) bytes[i] = body.charCodeAt(i);
+			const blob = new Blob([bytes], { type: contentType });
+			const url = URL.createObjectURL(blob);
+			imgEl.src = url;
 		}
 	}
 	function createEditorState(doc?: string) {
@@ -93,6 +105,7 @@
 		/>
 		<Button type="submit" class="min-w-40 rounded-l-none border-l-0">Send</Button>
 	</form>
+	<img bind:this={imgEl} class="h-12 w-12" alt="response" />
 
 	<Resizable.PaneGroup direction="vertical" class="flex-1">
 		<Resizable.Pane defaultSize={50} minSize={20}>

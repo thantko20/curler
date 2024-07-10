@@ -22,6 +22,7 @@ export namespace curler {
 	    body: any;
 	    contentType: string;
 	    statusCode: number;
+	    size: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Response(source);
@@ -32,6 +33,7 @@ export namespace curler {
 	        this.body = source["body"];
 	        this.contentType = source["contentType"];
 	        this.statusCode = source["statusCode"];
+	        this.size = source["size"];
 	    }
 	}
 

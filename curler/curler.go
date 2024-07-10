@@ -17,6 +17,7 @@ type Response struct {
 	Body        interface{} `json:"body"`
 	ContentType string      `json:"contentType"`
 	StatusCode  int         `json:"statusCode"`
+	Size        int         `json:"size"`
 }
 
 func Curl(opts RequestOptions) (Response, error) {
@@ -38,9 +39,11 @@ func Curl(opts RequestOptions) (Response, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return Response{
-		Body:        string(payload),
+		Body:        payload,
 		ContentType: res.Header.Get("Content-Type"),
+		Size:        len(payload),
 		StatusCode:  res.StatusCode,
 	}, nil
 }
