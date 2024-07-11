@@ -3,25 +3,10 @@
 	import { Input } from '$lib/components/ui/input';
 	import * as Select from '$lib/components/ui/select';
 	import { cn } from '$lib/utils';
-	import { Send } from '$lib/wailsjs/go/main/App';
 	import * as Resizable from '$lib/components/ui/resizable';
-
-	import { basicSetup } from 'codemirror';
-	import { EditorState } from '@codemirror/state';
-	import { EditorView } from '@codemirror/view';
-	import { jsonLanguage } from '@codemirror/lang-json';
-	import { onMount } from 'svelte';
-
-	let editorEl: HTMLDivElement;
-	let editorView: EditorView;
-	let imgEl: HTMLImageElement;
-
-	onMount(() => {
-		editorView = new EditorView({
-			state: createEditorState(),
-			parent: editorEl
-		});
-	});
+	import { send } from '$lib/send';
+	import type { SendReturn } from '$lib/types';
+	import Output from '$lib/components/Output.svelte';
 
 	type HttpMethod = 'GET' | 'POST';
 	type HttpMethodOption = { label: string; value: HttpMethod };
@@ -32,47 +17,23 @@
 	];
 	let selectedMethodOption: HttpMethodOption | undefined = { label: 'GET', value: 'GET' };
 	$: selectedValue = selectedMethodOption?.value;
-	let response = '';
 	let loading = false;
 	let url = 'https://dummyjson.com/product';
 
-	async function send() {
+	let result: SendReturn;
+
+	async function onSend() {
 		if (!url || !selectedValue) return;
-		loading = true;
-		const {
-			body: encoded,
-			contentType,
-			size
-		} = await Send({
-			method: selectedValue,
+		result = await send({
+			headers: {},
 			url,
-			body: selectedValue === 'POST' ? JSON.stringify({ name: 'New Product' }) : undefined,
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		}).finally(() => (loading = false));
-		const body = encoded ? atob(encoded) : '';
-		if (contentType.startsWith('application/json')) {
-			response = JSON.stringify(JSON.parse(body), null, 2);
-			editorView.setState(createEditorState(response));
-		} else if (contentType.startsWith('image/')) {
-			let bytes = new Uint8Array(body.length);
-			for (var i = 0; i < body.length; i++) bytes[i] = body.charCodeAt(i);
-			const blob = new Blob([bytes], { type: contentType });
-			const url = URL.createObjectURL(blob);
-			imgEl.src = url;
-		}
-	}
-	function createEditorState(doc?: string) {
-		return EditorState.create({
-			doc: doc,
-			extensions: [basicSetup, jsonLanguage, EditorState.readOnly.of(true)]
+			method: selectedValue
 		});
 	}
 </script>
 
 <div class="flex h-screen flex-col">
-	<form on:submit|preventDefault={send} class="flex p-2">
+	<form on:submit|preventDefault={onSend} class="flex p-2">
 		<Select.Root items={methods} bind:selected={selectedMethodOption}>
 			<Select.Trigger
 				class={cn(
@@ -105,7 +66,6 @@
 		/>
 		<Button type="submit" class="min-w-40 rounded-l-none border-l-0">Send</Button>
 	</form>
-	<img bind:this={imgEl} class="h-12 w-12" alt="response" />
 
 	<Resizable.PaneGroup direction="vertical" class="flex-1">
 		<Resizable.Pane defaultSize={50} minSize={20}>
@@ -118,7 +78,9 @@
 		</Resizable.Pane>
 		<Resizable.Handle withHandle class="bg-gray-300" />
 		<Resizable.Pane defaultSize={50} minSize={30}>
-			<div class="h-full overflow-auto overflow-y-auto p-4" bind:this={editorEl}></div>
+			{#if result}
+				<Output sendResult={result} />
+			{/if}
 		</Resizable.Pane>
 	</Resizable.PaneGroup>
 </div>
