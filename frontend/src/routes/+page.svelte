@@ -1,54 +1,55 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import * as Select from '$lib/components/ui/select';
-	import { cn } from '$lib/utils';
-	import * as Resizable from '$lib/components/ui/resizable';
-	import { send } from '$lib/send';
-	import type { SendReturn } from '$lib/types';
-	import Output from '$lib/components/Output.svelte';
-	import Spinner from '$lib/components/ui/Spinner.svelte';
+	import { Button } from "$lib/components/ui/button"
+	import { Input } from "$lib/components/ui/input"
+	import * as Select from "$lib/components/ui/select"
+	import { cn } from "$lib/utils"
+	import * as Resizable from "$lib/components/ui/resizable"
+	import { send } from "$lib/send"
+	import type { SendReturn } from "$lib/types"
+	import Output from "$lib/components/Output.svelte"
+	import Spinner from "$lib/components/ui/Spinner.svelte"
 
-	type HttpMethod = 'GET' | 'POST';
-	type HttpMethodOption = { label: string; value: HttpMethod };
+	type HttpMethod = "GET" | "POST"
+	type HttpMethodOption = { label: string; value: HttpMethod }
 
 	let methods: Array<HttpMethodOption> = [
-		{ label: 'GET', value: 'GET' },
-		{ label: 'POST', value: 'POST' }
-	];
-	let selectedMethodOption: HttpMethodOption | undefined = { label: 'GET', value: 'GET' };
-	$: selectedValue = selectedMethodOption?.value;
-	let loading = false;
-	let url = 'https://dummyjson.com/product';
+		{ label: "GET", value: "GET" },
+		{ label: "POST", value: "POST" }
+	]
+	let selectedMethodOption: HttpMethodOption | undefined = { label: "GET", value: "GET" }
+	$: selectedValue = selectedMethodOption?.value
+	let loading = false
+	let defaultUrl = "https://dummyjson.com/product"
+	let url = defaultUrl
 
-	let result: SendReturn;
+	let result: SendReturn
 
-	async function onSend() {
-		if (!url || !selectedValue) return;
+	async function onClickSend() {
+		if (!url || !selectedValue) return
 		try {
-			loading = true;
+			loading = true
 			result = await send({
 				headers: {},
 				url,
 				method: selectedValue
-			});
+			})
 		} catch (error) {
-			console.error(error);
+			console.error(error)
 		} finally {
-			loading = false;
+			loading = false
 		}
 	}
 </script>
 
 <div class="flex h-screen flex-col">
-	<form on:submit|preventDefault={onSend} class="flex p-2">
+	<form on:submit|preventDefault={onClickSend} class="flex p-2">
 		<Select.Root items={methods} bind:selected={selectedMethodOption}>
 			<Select.Trigger
 				class={cn(
-					'max-w-36 rounded-r-none border-r-0 font-semibold',
+					"max-w-36 rounded-r-none border-r-0 font-semibold",
 
-					selectedValue === 'GET' && 'bg-green-50 text-green-500',
-					selectedValue === 'POST' && 'bg-blue-50 text-blue-500'
+					selectedValue === "GET" && "bg-green-50 text-green-500",
+					selectedValue === "POST" && "bg-blue-50 text-blue-500"
 				)}
 			>
 				<Select.Value placeholder="Select an option" />
@@ -58,11 +59,11 @@
 					<Select.Item
 						value={method.value}
 						class={cn(
-							'font-semibold',
-							method.value === 'GET' &&
-								'text-green-500 data-[highlighted]:bg-green-50 data-[highlighted]:text-green-500',
-							method.value === 'POST' &&
-								'text-blue-500 data-[highlighted]:bg-blue-50 data-[highlighted]:text-blue-500'
+							"font-semibold",
+							method.value === "GET" &&
+								"text-green-500 data-[highlighted]:bg-green-50 data-[highlighted]:text-green-500",
+							method.value === "POST" &&
+								"text-blue-500 data-[highlighted]:bg-blue-50 data-[highlighted]:text-blue-500"
 						)}>{method.label}</Select.Item
 					>
 				{/each}

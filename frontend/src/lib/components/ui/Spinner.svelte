@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
+	import { cn } from "$lib/utils"
 
-	let className: string = '';
-	export { className as class };
+	let className: string = ""
+	export { className as class }
 </script>
 
 <svg
-	class={cn('h-5 w-5 animate-spin text-white', className)}
+	class={cn("h-5 w-5 animate-spin text-white", className)}
 	xmlns="http://www.w3.org/2000/svg"
 	fill="none"
 	viewBox="0 0 24 24"
