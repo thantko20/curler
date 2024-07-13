@@ -3,15 +3,14 @@
 	import { EditorView } from "@codemirror/view"
 	import { jsonLanguage } from "@codemirror/lang-json"
 	import { javascriptLanguage } from "@codemirror/lang-javascript"
-	import { html, htmlLanguage } from "@codemirror/lang-html"
+	import { htmlLanguage } from "@codemirror/lang-html"
 	import { basicSetup } from "codemirror"
 	import { onMount } from "svelte"
-	import type { JsonOutput } from "$lib/types"
+	import type { CodeOutput } from "$lib/types"
 
-	export let output: JsonOutput
+	export let output: CodeOutput
 
 	export let className: string = ""
-	export let lang: string = "json"
 
 	let editorEl: HTMLDivElement
 	let editorView: EditorView
@@ -25,7 +24,7 @@
 
 	function createEditorState(doc?: string) {
 		let extensions: Extension = [basicSetup, EditorState.readOnly.of(true)]
-		const langProvider = getLanguageProvider(lang)
+		const langProvider = getLanguageProvider(output.type)
 		if (langProvider) {
 			extensions = extensions.concat(langProvider)
 		}
@@ -35,7 +34,7 @@
 		})
 	}
 
-	function getLanguageProvider(lang: string) {
+	function getLanguageProvider(lang: CodeOutput["type"]) {
 		switch (lang) {
 			case "javascript":
 				return javascriptLanguage

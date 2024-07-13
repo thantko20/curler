@@ -5,22 +5,22 @@
 	import { cn } from "$lib/utils"
 	import * as Resizable from "$lib/components/ui/resizable"
 	import { send } from "$lib/send"
-	import type { SendReturn } from "$lib/types"
-	import Output from "$lib/components/Output.svelte"
+	import type { HttpMethod, SendReturn } from "$lib/types"
+	import Output from "$lib/components/output.svelte"
 	import Spinner from "$lib/components/ui/Spinner.svelte"
 
-	type HttpMethod = "GET" | "POST"
 	type HttpMethodOption = { label: string; value: HttpMethod }
+
+	const DEFAULT_URL = "https://dummyjson.com/product"
 
 	let methods: Array<HttpMethodOption> = [
 		{ label: "GET", value: "GET" },
 		{ label: "POST", value: "POST" }
 	]
-	let selectedMethodOption: HttpMethodOption | undefined = { label: "GET", value: "GET" }
-	$: selectedValue = selectedMethodOption?.value
+	let selectedHttpMethod: HttpMethodOption | undefined = { label: "GET", value: "GET" }
+	$: selectedValue = selectedHttpMethod?.value
 	let loading = false
-	let defaultUrl = "https://dummyjson.com/product"
-	let url = defaultUrl
+	let url = DEFAULT_URL
 
 	let result: SendReturn
 
@@ -43,7 +43,7 @@
 
 <div class="flex h-screen flex-col">
 	<form on:submit|preventDefault={onClickSend} class="flex p-2">
-		<Select.Root items={methods} bind:selected={selectedMethodOption}>
+		<Select.Root items={methods} bind:selected={selectedHttpMethod}>
 			<Select.Trigger
 				class={cn(
 					"max-w-36 rounded-r-none border-r-0 font-semibold",

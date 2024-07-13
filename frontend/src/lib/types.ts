@@ -5,7 +5,9 @@ export const httpMethods = {
 
 export type HttpMethod = (typeof httpMethods)[keyof typeof httpMethods]
 
-type OutputBlueprint<T extends string, U extends unknown> = { type: T; body: U }
+export type OutputType = "json" | "image" | "binary" | "html" | "javascript"
+
+type OutputBlueprint<T extends OutputType, U extends unknown> = { type: T; body: U }
 
 export type JsonOutput = OutputBlueprint<"json", string>
 
@@ -13,7 +15,13 @@ export type ImageOutput = OutputBlueprint<"image", Blob>
 
 export type BinaryOutput = OutputBlueprint<"binary", ArrayBuffer>
 
-export type Output = JsonOutput | ImageOutput | BinaryOutput
+export type HtmlOutput = OutputBlueprint<"html", string>
+
+export type JavascriptOutput = OutputBlueprint<"javascript", string>
+
+export type CodeOutput = JsonOutput | HtmlOutput | JavascriptOutput
+
+export type Output = CodeOutput | ImageOutput | BinaryOutput
 
 export type SuccessSendReturn = {
 	isRequestErr: false
