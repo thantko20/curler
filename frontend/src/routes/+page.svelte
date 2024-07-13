@@ -7,6 +7,7 @@
 	import { send } from '$lib/send';
 	import type { SendReturn } from '$lib/types';
 	import Output from '$lib/components/Output.svelte';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
 
 	type HttpMethod = 'GET' | 'POST';
 	type HttpMethodOption = { label: string; value: HttpMethod };
@@ -24,11 +25,18 @@
 
 	async function onSend() {
 		if (!url || !selectedValue) return;
-		result = await send({
-			headers: {},
-			url,
-			method: selectedValue
-		});
+		try {
+			loading = true;
+			result = await send({
+				headers: {},
+				url,
+				method: selectedValue
+			});
+		} catch (error) {
+			console.error(error);
+		} finally {
+			loading = false;
+		}
 	}
 </script>
 
@@ -64,7 +72,7 @@
 			bind:value={url}
 			class="foucs:ring-0 rounded-l-none rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
 		/>
-		<Button type="submit" class="min-w-40 rounded-l-none border-l-0">Send</Button>
+		<Button type="submit" class="min-w-40 rounded-l-none border-l-0" {loading}>Send</Button>
 	</form>
 
 	<Resizable.PaneGroup direction="vertical" class="flex-1">
@@ -77,9 +85,14 @@
 			</div>
 		</Resizable.Pane>
 		<Resizable.Handle withHandle class="bg-gray-300" />
-		<Resizable.Pane defaultSize={50} minSize={30}>
+		<Resizable.Pane defaultSize={50} minSize={30} class="relative">
 			{#if result}
 				<Output sendResult={result} />
+			{/if}
+			{#if loading}
+				<div class="absolute inset-0 flex items-center justify-center bg-black/20">
+					<Spinner class="h-6 w-6" />
+				</div>
 			{/if}
 		</Resizable.Pane>
 	</Resizable.PaneGroup>

@@ -21,9 +21,9 @@ export const send = async (opts: SendOptions): Promise<SendReturn> => {
 		const durationMs = end - start;
 
 		const contentType = response.headers.get('Content-Type') || 'application/json';
+		const mimeType = getMimeType(contentType);
 		const responseBody = await response.arrayBuffer();
 		const raw = new TextDecoder().decode(responseBody);
-		const blob = await response.blob();
 		const main: Omit<SuccessSendReturn, 'output'> = {
 			isRequestErr: false,
 			durationMs,
@@ -31,12 +31,13 @@ export const send = async (opts: SendOptions): Promise<SendReturn> => {
 			raw,
 			headers: Object.fromEntries(response.headers.entries()),
 			contentType,
+			mimeType,
 			statusCode: response.status,
-			responseBodySize: Number(response.headers.get('Content-Length') || blob.size)
+			responseBodySize: Number(response.headers.get('Content-Length') || responseBody.byteLength)
 		};
 		return {
 			...main,
-			output: createOutput(contentType, responseBody)
+			output: createOutput(mimeType, responseBody)
 		};
 	} catch (err) {
 		console.error(err);
@@ -47,8 +48,7 @@ export const send = async (opts: SendOptions): Promise<SendReturn> => {
 	}
 };
 
-function createOutput(contentType: string, data: ArrayBuffer): Output {
-	const mimeType = getMimeType(contentType);
+function createOutput(mimeType: string, data: ArrayBuffer): Output {
 	if (mimeType.startsWith('application/json')) {
 		const text = new TextDecoder().decode(data);
 		return {

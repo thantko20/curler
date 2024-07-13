@@ -20,6 +20,7 @@ export type SuccessSendReturn = {
 	statusCode: number;
 	headers: Record<string, string>;
 	contentType: string;
+	mimeType: string;
 	durationMs: number;
 	raw: string;
 	originalResponse: globalThis.Response;

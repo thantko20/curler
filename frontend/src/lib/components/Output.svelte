@@ -4,8 +4,10 @@
 
 	export let sendResult: SendReturn;
 	let imgSrc: string;
-	if (!sendResult.isRequestErr && sendResult.output.type === 'image') {
-		imgSrc = URL.createObjectURL(sendResult.output.body);
+	$: {
+		if (!sendResult.isRequestErr && sendResult.output.type === 'image') {
+			imgSrc = URL.createObjectURL(sendResult.output.body);
+		}
 	}
 </script>
 
