@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CodeOutput, Output, SendReturn } from "$lib/types"
+	import type { Output, SendReturn } from "$lib/types"
 	import CodeEditor from "./code-editor.svelte"
 
 	export let sendResult: SendReturn
@@ -19,7 +19,7 @@
 	{#if sendResult.isRequestErr}
 		<p>Request Error</p>
 	{:else if isCodeOutput(sendResult.output)}
-		<CodeEditor className="h-full overflow-auto" output={sendResult.output} />
+		<CodeEditor class="h-full overflow-auto" output={sendResult.output} />
 	{:else if sendResult.output.type === "image"}
 		<img src={imgSrc} class="mx-auto" alt="response" />
 	{:else if sendResult.output.type === "binary"}

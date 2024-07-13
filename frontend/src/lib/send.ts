@@ -49,11 +49,21 @@ export const send = async (opts: SendOptions): Promise<SendReturn> => {
 }
 
 function createOutput(mimeType: string, data: ArrayBuffer): Output {
+	const rawText = new TextDecoder().decode(data)
 	if (mimeType.startsWith("application/json")) {
-		const text = new TextDecoder().decode(data)
 		return {
 			type: "json",
-			body: JSON.stringify(JSON.parse(text), null, 2)
+			body: JSON.stringify(JSON.parse(rawText), null, 2)
+		}
+	} else if (mimeType.startsWith("text/html")) {
+		return {
+			type: "html",
+			body: rawText
+		}
+	} else if (mimeType.startsWith("application/javascript")) {
+		return {
+			type: "javascript",
+			body: rawText
 		}
 	} else if (mimeType.startsWith("image/")) {
 		return {
@@ -63,7 +73,7 @@ function createOutput(mimeType: string, data: ArrayBuffer): Output {
 	}
 	return {
 		type: "binary",
-		body: data
+		body: rawText
 	}
 }
 

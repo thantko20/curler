@@ -10,7 +10,8 @@
 
 	export let output: CodeOutput
 
-	export let className: string = ""
+	let className: string = ""
+	export { className as class }
 
 	let editorEl: HTMLDivElement
 	let editorView: EditorView
