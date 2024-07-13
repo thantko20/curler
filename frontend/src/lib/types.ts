@@ -1,6 +1,9 @@
 export const httpMethods = {
 	GET: "GET",
-	POST: "POST"
+	POST: "POST",
+	DELETE: "DELETE",
+	PATCH: "PATCH",
+	PUT: "PUT"
 } as const
 
 export type HttpMethod = (typeof httpMethods)[keyof typeof httpMethods]
