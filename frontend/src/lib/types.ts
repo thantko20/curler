@@ -11,7 +11,7 @@ export type JsonOutput = OutputBlueprint<'json', string>;
 
 export type ImageOutput = OutputBlueprint<'image', Blob>;
 
-export type BinaryOutput = OutputBlueprint<'binary', string>;
+export type BinaryOutput = OutputBlueprint<'binary', ArrayBuffer>;
 
 export type Output = JsonOutput | ImageOutput | BinaryOutput;
 
