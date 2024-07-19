@@ -28,4 +28,12 @@
 			/>
 		</div>
 	</Tabs.Content>
+	<Tabs.Content value="headers">
+		<div class="text-sm font-semibold text-gray-500">Headers</div>
+		<KeyValueTable
+			pairs={[["Content-Type", "application/json"]]}
+			onPairChange={() => {}}
+			showExtraRow={false}
+		/>
+	</Tabs.Content>
 </Tabs.Root>

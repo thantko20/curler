@@ -1,4 +1,4 @@
-import { writable } from "svelte/store"
+import { get, writable } from "svelte/store"
 import type { HttpMethod } from "./types"
 import { extractPathParams } from "./extract-path-params"
 
@@ -69,7 +69,23 @@ function createCurlStore() {
 					state.pathVariables[key] = value
 				}
 				return state
+			}),
+		get formattedUrl() {
+			const state = get(this)
+			if (!state.url) return ""
+			let url = state.url
+			if (!url.startsWith("http://") && !url.startsWith("https://")) {
+				url = `https://${url}`
+			}
+			const pathParams = extractPathParams(url)
+			pathParams.forEach((p) => {
+				if (p in state.pathVariables) {
+					url = url.replace(p, state.pathVariables[p])
+				}
 			})
+
+			return url
+		}
 	}
 }
 
