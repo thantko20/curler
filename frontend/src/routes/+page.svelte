@@ -1,5 +1,4 @@
 <script lang="ts">
-	import * as Table from "$lib/components/ui/table"
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import * as Select from "$lib/components/ui/select"
@@ -9,13 +8,10 @@
 	import type { HttpMethod, SendReturn } from "$lib/types"
 	import Output from "$lib/components/output.svelte"
 	import Spinner from "$lib/components/ui/Spinner.svelte"
-	import * as Tabs from "$lib/components/ui/tabs"
 	import RequestFormTabs from "$lib/components/request-form-tabs.svelte"
+	import curlStore from "$lib/curl-store"
 
 	type HttpMethodOption = { label: string; value: HttpMethod }
-
-	const DEFAULT_URL = "https://dummyjson.com/product"
-	let url = DEFAULT_URL
 
 	let methods: Array<HttpMethodOption> = [
 		{ label: "GET", value: "GET" },
@@ -23,19 +19,19 @@
 		{ label: "DELETE", value: "DELETE" }
 	]
 	let selectedHttpMethod: HttpMethodOption | undefined = { label: "GET", value: "GET" }
-	$: selectedValue = selectedHttpMethod?.value
+	$: $curlStore.method = selectedHttpMethod?.value ?? "GET"
 	let loading = false
 
 	let result: SendReturn
 
-	async function onClickSend() {
-		if (!url || !selectedValue) return
+	async function onSend() {
+		if (!$curlStore.url || !$curlStore.method) return
 		try {
 			loading = true
 			result = await send({
 				headers: {},
-				url,
-				method: selectedValue
+				url: $curlStore.url,
+				method: $curlStore.method
 			})
 		} catch (error) {
 			console.error(error)
@@ -46,15 +42,15 @@
 </script>
 
 <div class="flex h-screen flex-col">
-	<form on:submit|preventDefault={onClickSend} class="flex p-2">
+	<form on:submit|preventDefault={onSend} class="flex p-2">
 		<Select.Root items={methods} bind:selected={selectedHttpMethod}>
 			<Select.Trigger
 				class={cn(
 					"max-w-36 rounded-r-none border-r-0 font-semibold",
 
-					selectedValue === "GET" && "bg-green-50 text-green-500",
-					selectedValue === "POST" && "bg-blue-50 text-blue-500",
-					selectedValue === "DELETE" && "bg-red-50 text-red-500"
+					$curlStore.method === "GET" && "bg-green-50 text-green-500",
+					$curlStore.method === "POST" && "bg-blue-50 text-blue-500",
+					$curlStore.method === "DELETE" && "bg-red-50 text-red-500"
 				)}
 			>
 				<Select.Value placeholder="Select an option" />
@@ -77,7 +73,7 @@
 			</Select.Content>
 		</Select.Root>
 		<Input
-			bind:value={url}
+			bind:value={$curlStore.url}
 			class="foucs:ring-0 rounded-l-none rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
 		/>
 		<Button type="submit" class="min-w-40 rounded-l-none border-l-0" {loading}>Send</Button>
@@ -85,19 +81,23 @@
 
 	<Resizable.PaneGroup direction="vertical" class="flex-1">
 		<Resizable.Pane defaultSize={50} minSize={20}>
-			<RequestFormTabs />
+			<div class="h-full overflow-auto">
+				<RequestFormTabs />
+			</div>
 		</Resizable.Pane>
 		<Resizable.Handle withHandle class="bg-gray-300" />
 		<Resizable.Pane defaultSize={50} minSize={30} class="relative">
-			{#if result}
-				<Output sendResult={result} />
-			{/if}
-			{#if loading}
-				<div class="absolute inset-0 flex items-center justify-center bg-black/40 text-gray-50">
-					<Spinner class="mr-4 h-6 w-6" />
-					Loading
-				</div>
-			{/if}
+			<div class="relative h-full overflow-auto">
+				{#if result}
+					<Output sendResult={result} />
+				{/if}
+				{#if loading}
+					<div class="absolute inset-0 flex items-center justify-center bg-black/40 text-gray-50">
+						<Spinner class="mr-4 h-6 w-6" />
+						Loading
+					</div>
+				{/if}
+			</div>
 		</Resizable.Pane>
 	</Resizable.PaneGroup>
 </div>
