@@ -1,5 +1,6 @@
 import { writable } from "svelte/store"
 import type { HttpMethod } from "./types"
+import { extractPathParams } from "./extract-path-params"
 
 const DEFAULT_URL = "https://dummyjson.com/product"
 
@@ -41,13 +42,6 @@ function createCurlStore() {
 			}
 		})
 	})
-
-	function extractPathParams(url: string) {
-		const splitted = url.split("?")
-		const path = splitted[0] ?? ""
-		const pathParams = path.split("/").filter((p) => p.startsWith(":") && p.length > 1)
-		return pathParams
-	}
 
 	return {
 		subscribe,

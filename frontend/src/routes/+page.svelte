@@ -10,6 +10,7 @@
 	import Spinner from "$lib/components/ui/Spinner.svelte"
 	import RequestFormTabs from "$lib/components/request-form-tabs.svelte"
 	import curlStore from "$lib/curl-store"
+	import { extractPathParams } from "$lib/extract-path-params"
 
 	type HttpMethodOption = { label: string; value: HttpMethod }
 
@@ -24,13 +25,29 @@
 
 	let result: SendReturn
 
+	function formattedUrl() {
+		if (!$curlStore.url) return ""
+		let url = $curlStore.url
+		// if (!url.startsWith("http://") || !url.startsWith("https://")) {
+		// 	url = `https://${url}`
+		// }
+		const pathParams = extractPathParams(url)
+		pathParams.forEach((p) => {
+			if (p in $curlStore.pathVariables) {
+				url = url.replace(`${p}`, $curlStore.pathVariables[p])
+			}
+		})
+
+		return url
+	}
+
 	async function onSend() {
 		if (!$curlStore.url || !$curlStore.method) return
 		try {
 			loading = true
 			result = await send({
 				headers: {},
-				url: $curlStore.url,
+				url: formattedUrl(),
 				method: $curlStore.method
 			})
 		} catch (error) {
