@@ -14,7 +14,9 @@
 	let methods: Array<HttpMethodOption> = [
 		{ label: "GET", value: "GET" },
 		{ label: "POST", value: "POST" },
-		{ label: "DELETE", value: "DELETE" }
+		{ label: "DELETE", value: "DELETE" },
+		{ label: "PATCH", value: "PATCH" },
+		{ label: "PUT", value: "PUT" }
 	]
 	let selectedHttpMethod: HttpMethodOption | undefined = { label: "GET", value: "GET" }
 	$: $curlStore.method = selectedHttpMethod?.value ?? "GET"
@@ -26,9 +28,11 @@
 			class={cn(
 				"max-w-36 rounded-r-none border-r-0 font-semibold",
 
-				$curlStore.method === "GET" && "bg-green-50 text-green-500",
-				$curlStore.method === "POST" && "bg-blue-50 text-blue-500",
-				$curlStore.method === "DELETE" && "bg-red-50 text-red-500"
+				$curlStore.method === "GET" && "text-green-500",
+				$curlStore.method === "POST" && "text-blue-500",
+				$curlStore.method === "DELETE" && "text-red-500",
+				$curlStore.method === "PATCH" && "text-yellow-500",
+				$curlStore.method === "PUT" && "text-purple-500"
 			)}
 		>
 			<Select.Value placeholder="Select an option" />
@@ -39,12 +43,11 @@
 					value={method.value}
 					class={cn(
 						"font-semibold",
-						method.value === "GET" &&
-							"text-green-500 data-[highlighted]:bg-green-50 data-[highlighted]:text-green-500",
-						method.value === "POST" &&
-							"text-blue-500 data-[highlighted]:bg-blue-50 data-[highlighted]:text-blue-500",
-						method.value === "DELETE" &&
-							"text-red-500 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-500"
+						method.value === "GET" && "text-green-500 data-[highlighted]:text-green-500",
+						method.value === "POST" && "text-blue-500 data-[hgihlighted]:text-blue-500",
+						method.value === "DELETE" && "text-red-500 data-[highlighted]:text-red-500",
+						method.value === "PATCH" && "text-yellow-500 data-[highlighted]:text-yellow-500",
+						method.value === "PUT" && "text-purple-500 data-[highlighted]:text-purple-500"
 					)}>{method.label}</Select.Item
 				>
 			{/each}

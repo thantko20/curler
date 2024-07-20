@@ -10,7 +10,7 @@
 
 	let loading = false
 
-	let result: SendReturn
+	let result: SendReturn | undefined = undefined
 
 	async function onSend() {
 		if (!$curlStore.url || !$curlStore.method) return

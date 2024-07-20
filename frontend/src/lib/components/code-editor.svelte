@@ -23,6 +23,14 @@
 		})
 	})
 
+	$: {
+		if (editorView) {
+			editorView.dispatch({
+				changes: { from: 0, to: editorView.state.doc.length, insert: output.body }
+			})
+		}
+	}
+
 	function createEditorState(doc?: string) {
 		let extensions: Extension = [basicSetup, EditorState.readOnly.of(true)]
 		const langProvider = getLanguageProvider(output.type)
