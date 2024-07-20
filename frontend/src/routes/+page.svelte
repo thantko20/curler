@@ -17,7 +17,7 @@
 		try {
 			loading = true
 			result = await send({
-				headers: {},
+				headers: $curlStore.headers,
 				url: curlStore.formattedUrl,
 				method: $curlStore.method
 			})

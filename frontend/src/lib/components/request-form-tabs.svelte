@@ -31,9 +31,8 @@
 	<Tabs.Content value="headers">
 		<div class="text-sm font-semibold text-gray-500">Headers</div>
 		<KeyValueTable
-			pairs={[["Content-Type", "application/json"]]}
-			onPairChange={() => {}}
-			showExtraRow={false}
+			pairs={Object.entries($curlStore.headers)}
+			onPairChange={curlStore.onHeaderEntryChange}
 		/>
 	</Tabs.Content>
 </Tabs.Root>
