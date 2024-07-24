@@ -16,10 +16,7 @@ export type CurlStore = {
 export function createCurlStore() {
 	const { set, subscribe, update } = writable<CurlStore>({
 		body: undefined,
-		headers: {
-			"Content-Type": "application/json",
-			"User-Agent": "curler/0.0.1"
-		},
+		headers: {},
 		method: null,
 		url: DEFAULT_URL,
 		queryParamPairs: [["", ""]],
@@ -78,10 +75,10 @@ export function createCurlStore() {
 			update((state) => {
 				let headerEntries = Object.entries(state.headers)
 				const [key, value] = pair
-				if (headerEntries[index]) {
-					headerEntries[index] = [key.replaceAll(" ", "-"), value]
-				} else if (!pair[0] && !pair[1]) {
+				if (!key && !value) {
 					headerEntries = headerEntries.filter((_, i) => i !== index)
+				} else if (headerEntries[index]) {
+					headerEntries[index] = [key.replaceAll(" ", "-"), value]
 				} else if (headerEntries.length === index) {
 					headerEntries.push([key.trim().replaceAll(" ", "-"), value])
 				}

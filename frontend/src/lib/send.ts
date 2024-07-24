@@ -1,8 +1,5 @@
+import { DefaultHeaders } from "./constants"
 import type { SendReturn, SendOptions, SuccessSendReturn, Output } from "./types"
-
-const defaultHeaders = {
-	"User-Agent": "Curler/0.0.1"
-}
 
 export const send = async (opts: SendOptions): Promise<SendReturn> => {
 	const { url, method, headers, body, signal } = opts
@@ -11,7 +8,7 @@ export const send = async (opts: SendOptions): Promise<SendReturn> => {
 		let response = await fetch(url, {
 			method,
 			headers: {
-				...defaultHeaders,
+				...DefaultHeaders,
 				...headers
 			},
 			body,

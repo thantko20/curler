@@ -28,6 +28,7 @@
 							onPairChange([e.currentTarget.value, value], i)
 						}}
 						disabled={!enableKeyInput}
+						class="px-2 py-1"
 					/></Table.Cell
 				>
 				<Table.Cell class="p-2"
@@ -35,6 +36,7 @@
 						placeholder="value"
 						{value}
 						on:input={(e) => onPairChange([key, e.currentTarget.value], i)}
+						class="px-2 py-1"
 					/></Table.Cell
 				>
 			</Table.Row>
