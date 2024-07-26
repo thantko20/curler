@@ -8,7 +8,7 @@ export const httpMethods = {
 
 export type HttpMethod = (typeof httpMethods)[keyof typeof httpMethods]
 
-export type OutputType = "json" | "image" | "binary" | "html" | "javascript"
+export type OutputType = "json" | "image" | "binary" | "html" | "javascript" | "text" | "yaml"
 
 type OutputBlueprint<T extends OutputType, U extends unknown> = { type: T; body: U }
 
@@ -22,7 +22,11 @@ export type HtmlOutput = OutputBlueprint<"html", string>
 
 export type JavascriptOutput = OutputBlueprint<"javascript", string>
 
-export type CodeOutput = JsonOutput | HtmlOutput | JavascriptOutput
+export type TextOutput = OutputBlueprint<"text", string>
+
+export type YamlOutput = OutputBlueprint<"yaml", string>
+
+export type CodeOutput = JsonOutput | HtmlOutput | JavascriptOutput | TextOutput | YamlOutput
 
 export type Output = CodeOutput | ImageOutput | BinaryOutput
 

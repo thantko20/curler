@@ -4,11 +4,13 @@
 	import KeyValueTable from "./key-value-table.svelte"
 	import * as Select from "./ui/select"
 	import CodeEditor from "./code-editor.svelte"
+	type TextBody = "text" | "json" | "yaml"
+	type TextBodySelected = { label: string; value: TextBody }
 	let bodySelected = {
 		label: "None",
 		value: "none"
 	}
-	let textBodySelected = {
+	let textBodySelected: TextBodySelected = {
 		label: "JSON",
 		value: "json"
 	}
