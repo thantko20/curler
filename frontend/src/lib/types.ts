@@ -57,3 +57,15 @@ export type SendOptions = {
 	body?: BodyInit
 	signal?: AbortSignal
 }
+
+export type Pairs = Array<{ key: string; value: string }>
+
+export type RequestItem = {
+	url: string
+	method: string
+	headers: Pairs
+	body: unknown
+	queryParams: Pairs
+	pathParams: Pairs
+	requestId: string
+}

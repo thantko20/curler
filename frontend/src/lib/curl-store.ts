@@ -4,6 +4,18 @@ import { extractPathParams } from "./extract-path-params"
 
 const DEFAULT_URL = "https://dummyjson.com/product"
 
+type Pairs = Array<[string, string]>
+
+type RequestItem = {
+	url: string
+	method: HttpMethod | null
+	headers: Pairs
+	body: unknown
+	queryParamPairs: Pairs
+	pathVariables: Pairs
+	// pathVariables: Record<string, string>
+}
+
 export type CurlStore = {
 	url: string
 	method: HttpMethod | null
