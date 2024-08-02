@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Tabs from "./ui/tabs"
-	import curlStore from "$lib/curl-store"
+	import requestStore from "$lib/requests/request-store"
 	import KeyValueTable from "./key-value-table.svelte"
 	import * as Select from "./ui/select"
 	import CodeEditor from "./code-editor.svelte"
@@ -23,29 +23,13 @@
 		<Tabs.Trigger value="body">Body</Tabs.Trigger>
 	</Tabs.List>
 	<Tabs.Content value="params">
-		<div>
-			<div class="text-sm font-semibold text-gray-500">Query Params</div>
-			<KeyValueTable
-				pairs={$curlStore.queryParamPairs}
-				onPairChange={curlStore.onParamsInputChange}
-			/>
-		</div>
-		<div class="mt-4">
-			<div class="text-sm font-semibold text-gray-500">Path Params</div>
-			<KeyValueTable
-				pairs={Object.entries($curlStore.pathVariables)}
-				onPairChange={curlStore.setPathVariable}
-				showExtraRow={false}
-				enableKeyInput={false}
-			/>
-		</div>
+		<KeyValueTable
+			pairs={$requestStore.queryParams}
+			onPairChange={requestStore.onQueryParamsChange}
+		/>
 	</Tabs.Content>
 	<Tabs.Content value="headers">
-		<div class="text-sm font-semibold text-gray-500">Headers</div>
-		<KeyValueTable
-			pairs={Object.entries($curlStore.headers)}
-			onPairChange={curlStore.onHeaderEntryChange}
-		/>
+		<KeyValueTable pairs={$requestStore.headers} onPairChange={requestStore.onHeadersChange} />
 	</Tabs.Content>
 	<Tabs.Content value="body">
 		<div class="flex gap-2">

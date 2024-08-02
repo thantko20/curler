@@ -5,21 +5,53 @@
 	import Output from "$lib/components/output.svelte"
 	import Spinner from "$lib/components/ui/Spinner.svelte"
 	import RequestFormTabs from "$lib/components/request-form-tabs.svelte"
-	import curlStore from "$lib/curl-store"
+	import requestStore from "$lib/requests/request-store"
 	import SendForm from "$lib/components/send-form.svelte"
 
 	let loading = false
 
 	let result: SendReturn | undefined = undefined
 
+	const formatRequest = () => {
+		function formatUrl() {
+			if (!$requestStore.url) return ""
+			let url = $requestStore.url
+			if (!url.startsWith("http://") && !url.startsWith("https://")) {
+				url = `https://${url}`
+			}
+			const urlObj = new URL(url)
+			$requestStore.queryParams.forEach((param) => {
+				urlObj.searchParams.append(param.key, param.value)
+			})
+			return urlObj.toString()
+		}
+
+		function formatHeaders() {
+			return Array.from(
+				new Headers($requestStore.headers.map((header) => [header.key, header.value])).entries()
+			)
+		}
+		console.log(formatHeaders())
+
+		return {
+			url: formatUrl(),
+			body: $requestStore.body,
+			method: $requestStore.method,
+			headers: formatHeaders(),
+			pathParams: $requestStore.pathParams,
+			queryParams: $requestStore.queryParams
+		}
+	}
+
 	async function onSend() {
-		if (!$curlStore.url || !$curlStore.method) return
+		if (!$requestStore.url || !$requestStore.method) return
+		const formattedRequest = formatRequest()
 		try {
 			loading = true
 			result = await send({
-				headers: $curlStore.headers,
-				url: curlStore.formattedUrl,
-				method: $curlStore.method
+				headers: formattedRequest.headers,
+				url: formattedRequest.url,
+				method: formattedRequest.method
 			})
 		} catch (error) {
 			console.error(error)

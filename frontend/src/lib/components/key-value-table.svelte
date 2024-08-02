@@ -1,13 +1,14 @@
 <script lang="ts">
 	import * as Table from "$lib/components/ui/table"
 	import { Input } from "$lib/components/ui/input"
+	import type { Pairs } from "$lib/types"
 
-	export let pairs: [string, string][] = [["", ""]]
-	export let onPairChange: (pair: [string, string], index: number) => void
+	export let pairs: Pairs = [{ key: "", value: "" }]
+	export let onPairChange: (pair: Pairs[number], index: number) => void
 	export let showExtraRow: boolean = true
 	export let enableKeyInput: boolean = true
 
-	$: derviedPairs = showExtraRow ? [...pairs, ["", ""]] : pairs
+	$: derviedPairs = showExtraRow ? [...pairs, { key: "", value: "" }] : pairs
 </script>
 
 <Table.Root>
@@ -18,14 +19,14 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each derviedPairs as [key, value], i}
+		{#each derviedPairs as { key, value }, i}
 			<Table.Row>
 				<Table.Cell class="p-2"
 					><Input
 						placeholder="key"
 						value={key}
 						on:input={(e) => {
-							onPairChange([e.currentTarget.value, value], i)
+							onPairChange({ key: e.currentTarget.value, value }, i)
 						}}
 						disabled={!enableKeyInput}
 						class="px-2 py-1"
@@ -35,7 +36,7 @@
 					><Input
 						placeholder="value"
 						{value}
-						on:input={(e) => onPairChange([key, e.currentTarget.value], i)}
+						on:input={(e) => onPairChange({ key, value: e.currentTarget.value }, i)}
 						class="px-2 py-1"
 					/></Table.Cell
 				>

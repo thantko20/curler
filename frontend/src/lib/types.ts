@@ -52,7 +52,8 @@ export type SendReturn =
 
 export type SendOptions = {
 	url: string
-	method: HttpMethod
+	// method: HttpMethod
+	method: string
 	headers: HeadersInit
 	body?: BodyInit
 	signal?: AbortSignal
