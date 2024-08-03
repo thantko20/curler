@@ -3,8 +3,8 @@
 	import { cn } from "$lib/utils"
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
-	import curlStore from "$lib/curl-store"
 	import type { HttpMethod } from "$lib/types"
+	import requestStore from "$lib/requests/request-store"
 
 	type HttpMethodOption = { label: string; value: HttpMethod }
 
@@ -19,7 +19,7 @@
 		{ label: "PUT", value: "PUT" }
 	]
 	let selectedHttpMethod: HttpMethodOption | undefined = { label: "GET", value: "GET" }
-	$: $curlStore.method = selectedHttpMethod?.value ?? "GET"
+	$: $requestStore.method = selectedHttpMethod?.value ?? "GET"
 </script>
 
 <form on:submit|preventDefault={onSend} class="flex p-2">
@@ -28,11 +28,11 @@
 			class={cn(
 				"max-w-36 rounded-r-none border-r-0 font-semibold",
 
-				$curlStore.method === "GET" && "text-green-500",
-				$curlStore.method === "POST" && "text-blue-500",
-				$curlStore.method === "DELETE" && "text-red-500",
-				$curlStore.method === "PATCH" && "text-yellow-500",
-				$curlStore.method === "PUT" && "text-purple-500"
+				$requestStore.method === "GET" && "text-green-500",
+				$requestStore.method === "POST" && "text-blue-500",
+				$requestStore.method === "DELETE" && "text-red-500",
+				$requestStore.method === "PATCH" && "text-yellow-500",
+				$requestStore.method === "PUT" && "text-purple-500"
 			)}
 		>
 			<Select.Value placeholder="Select an option" />
@@ -54,7 +54,7 @@
 		</Select.Content>
 	</Select.Root>
 	<Input
-		bind:value={$curlStore.url}
+		bind:value={$requestStore.url}
 		class="foucs:ring-0 rounded-l-none rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
 	/>
 	<Button type="submit" class="min-w-40 rounded-l-none border-l-0" {loading}>Send</Button>

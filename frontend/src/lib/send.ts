@@ -3,14 +3,12 @@ import type { SendReturn, SendOptions, SuccessSendReturn, Output } from "./types
 
 export const send = async (opts: SendOptions): Promise<SendReturn> => {
 	const { url, method, headers, body, signal } = opts
+	headers.set("User-Agent", "curler/0.0.1")
 	try {
 		const start = Date.now()
 		let response = await fetch(url, {
 			method,
-			headers: {
-				...DefaultHeaders,
-				...headers
-			},
+			headers,
 			body,
 			signal
 		})

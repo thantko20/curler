@@ -2,7 +2,6 @@ import { writable } from "svelte/store"
 import { nanoid } from "nanoid"
 import type { Pairs, RequestItem } from "../types"
 import { extractPathParams } from "../internals/extract-path-params"
-import { extractQueryParams } from "../internals/extract-query-params"
 
 export type InitialRequestItem = Omit<RequestItem, "requestId">
 
@@ -64,6 +63,12 @@ export const createRequestStore = (initialState = defaultInitialState) => {
 		onQueryParamsChange(pair: Pairs[number], index: number) {
 			update((state) => {
 				state.queryParams = handlePairsChange(state.queryParams, pair, index)
+				return state
+			})
+		},
+		onBodyChange(body: any) {
+			update((state) => {
+				state.body = body
 				return state
 			})
 		}

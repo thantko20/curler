@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { Output, SendReturn } from "$lib/types"
-	import CodeEditor from "./code-editor.svelte"
+	import type { HtmlOutput, JavascriptOutput, JsonOutput, Output, SendReturn } from "$lib/types"
+	import CodeMirror from "svelte-codemirror-editor"
+	import { getCodeMirrorLangSupport } from "$lib/internals/get-codemirror-lang-support"
 
 	export let sendResult: SendReturn
 	let imgSrc: string
@@ -10,7 +11,7 @@
 		}
 	}
 
-	function isCodeOutput(output: Output) {
+	function isCodeOutput(output: Output): output is JsonOutput | HtmlOutput | JavascriptOutput {
 		return output.type === "json" || output.type === "html" || output.type === "javascript"
 	}
 </script>
@@ -19,7 +20,13 @@
 	{#if sendResult.isRequestErr}
 		<p>Request Error</p>
 	{:else if isCodeOutput(sendResult.output)}
-		<CodeEditor class="h-full overflow-auto" output={sendResult.output} />
+		<CodeMirror
+			value={sendResult.output.body}
+			lang={getCodeMirrorLangSupport(sendResult.output.type)}
+			editable={false}
+			readonly={true}
+			class="h-full overflow-auto"
+		/>
 	{:else if sendResult.output.type === "image"}
 		<img src={imgSrc} class="mx-auto" alt="response" />
 	{:else if sendResult.output.type === "binary"}

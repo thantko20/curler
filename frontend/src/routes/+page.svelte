@@ -27,9 +27,12 @@
 		}
 
 		function formatHeaders() {
-			return Array.from(
-				new Headers($requestStore.headers.map((header) => [header.key, header.value])).entries()
-			)
+			const headers = new Headers($requestStore.headers.map((header) => [header.key, header.value]))
+			if (typeof $requestStore.body === "string") {
+				headers.set("Content-Type", "application/json")
+			}
+			// return Array.from(headers.entries())
+			return headers
 		}
 		console.log(formatHeaders())
 
@@ -51,7 +54,8 @@
 			result = await send({
 				headers: formattedRequest.headers,
 				url: formattedRequest.url,
-				method: formattedRequest.method
+				method: formattedRequest.method,
+				body: formattedRequest.body
 			})
 		} catch (error) {
 			console.error(error)

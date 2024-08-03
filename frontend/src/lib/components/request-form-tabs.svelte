@@ -4,6 +4,9 @@
 	import KeyValueTable from "./key-value-table.svelte"
 	import * as Select from "./ui/select"
 	import CodeEditor from "./code-editor.svelte"
+	import CodeMirror from "svelte-codemirror-editor"
+	import { getCodeMirrorLangSupport } from "$lib/internals/get-codemirror-lang-support"
+
 	type TextBody = "text" | "json" | "yaml"
 	type TextBodySelected = { label: string; value: TextBody }
 	let bodySelected = {
@@ -49,7 +52,7 @@
 						<Select.Value placeholder="Select an option" />
 					</Select.Trigger>
 					<Select.Content>
-						<Select.Item value="raw">Raw</Select.Item>
+						<Select.Item value="html">Raw</Select.Item>
 						<Select.Item value="json">JSON</Select.Item>
 						<Select.Item value="yaml">YAML</Select.Item>
 					</Select.Content>
@@ -58,7 +61,12 @@
 		</div>
 		<div class="mt-4">
 			{#if bodySelected.value === "text"}
-				<CodeEditor output={{ body: "", type: textBodySelected.value }} />
+				<CodeMirror
+					bind:value={$requestStore.body}
+					lang={getCodeMirrorLangSupport(textBodySelected.value)}
+					editable={true}
+					readonly={false}
+				/>
 			{/if}
 			{#if bodySelected.value === "form"}
 				<KeyValueTable pairs={[]} onPairChange={() => {}} />

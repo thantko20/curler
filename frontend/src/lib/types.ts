@@ -8,7 +8,15 @@ export const httpMethods = {
 
 export type HttpMethod = (typeof httpMethods)[keyof typeof httpMethods]
 
-export type OutputType = "json" | "image" | "binary" | "html" | "javascript" | "text" | "yaml"
+export type OutputType =
+	| "json"
+	| "image"
+	| "binary"
+	| "html"
+	| "javascript"
+	| "text"
+	| "yaml"
+	| "yml"
 
 type OutputBlueprint<T extends OutputType, U extends unknown> = { type: T; body: U }
 
@@ -54,7 +62,7 @@ export type SendOptions = {
 	url: string
 	// method: HttpMethod
 	method: string
-	headers: HeadersInit
+	headers: Headers
 	body?: BodyInit
 	signal?: AbortSignal
 }
@@ -65,7 +73,7 @@ export type RequestItem = {
 	url: string
 	method: string
 	headers: Pairs
-	body: unknown
+	body: any
 	queryParams: Pairs
 	pathParams: Pairs
 	requestId: string
