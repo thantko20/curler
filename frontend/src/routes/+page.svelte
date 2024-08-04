@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Resizable from "$lib/components/ui/resizable"
 	import { send } from "$lib/send"
-	import type { SendReturn } from "$lib/types"
+	import type { BodyType, SendReturn } from "$lib/types"
 	import Output from "$lib/components/output.svelte"
 	import Spinner from "$lib/components/ui/Spinner.svelte"
 	import RequestFormTabs from "$lib/components/request-form-tabs.svelte"
@@ -11,6 +11,21 @@
 	let loading = false
 
 	let result: SendReturn | undefined = undefined
+
+	function getContentTypeBasedOnBodyType(bodyType: BodyType) {
+		switch (bodyType) {
+			case "text":
+				return "text/plain"
+			case "json":
+				return "application/json"
+			case "yaml":
+				return "application/yaml"
+			case "multipart/form-data":
+				return ""
+			case "x-www-form-urlencoded":
+				return ""
+		}
+	}
 
 	const formatRequest = () => {
 		function formatUrl() {
@@ -28,17 +43,45 @@
 
 		function formatHeaders() {
 			const headers = new Headers($requestStore.headers.map((header) => [header.key, header.value]))
-			if (typeof $requestStore.body === "string") {
-				headers.set("Content-Type", "application/json")
+			if (typeof $requestStore.bodyType !== "undefined") {
+				headers.set("Content-Type", getContentTypeBasedOnBodyType($requestStore.bodyType) as string)
 			}
-			// return Array.from(headers.entries())
 			return headers
 		}
-		console.log(formatHeaders())
+
+		function formatBody() {
+			const bodyType = $requestStore.bodyType
+			if (
+				bodyType === "text" ||
+				bodyType === "json" ||
+				bodyType === "yaml" ||
+				bodyType === "html"
+			) {
+				return $requestStore.body
+			}
+
+			if (bodyType === "multipart/form-data") {
+				const formData = new FormData()
+				$requestStore.body.forEach(({ key, value }) => {
+					formData.append(key, value)
+				})
+				return formData
+			}
+
+			if (bodyType === "x-www-form-urlencoded") {
+				const formData = new URLSearchParams()
+				$requestStore.body.forEach(({ key, value }) => {
+					formData.append(key, value)
+				})
+				return formData
+			}
+
+			return undefined
+		}
 
 		return {
 			url: formatUrl(),
-			body: $requestStore.body,
+			body: formatBody(),
 			method: $requestStore.method,
 			headers: formatHeaders(),
 			pathParams: $requestStore.pathParams,

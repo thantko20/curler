@@ -67,14 +67,36 @@ export type SendOptions = {
 	signal?: AbortSignal
 }
 
-export type Pairs = Array<{ key: string; value: string }>
+export type Pairs<Value extends unknown = string> = Array<{ key: string; value: Value }>
+
+export type BodyType =
+	| "text"
+	| "multipart/form-data"
+	| "x-www-form-urlencoded"
+	| "json"
+	| "yaml"
+	| "html"
 
 export type RequestItem = {
 	url: string
 	method: string
 	headers: Pairs
-	body: any
+	// body: any
 	queryParams: Pairs
 	pathParams: Pairs
 	requestId: string
-}
+	// bodyType?: BodyType
+} & (
+	| {
+			bodyType: Extract<BodyType, "json" | "yaml" | "text" | "html">
+			body: string
+	  }
+	| {
+			bodyType: Extract<BodyType, "multipart/form-data" | "x-www-form-urlencoded">
+			body: Pairs
+	  }
+	| {
+			bodyType?: undefined
+			body?: undefined
+	  }
+)

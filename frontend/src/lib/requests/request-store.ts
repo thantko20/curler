@@ -1,6 +1,6 @@
 import { writable } from "svelte/store"
 import { nanoid } from "nanoid"
-import type { Pairs, RequestItem } from "../types"
+import type { BodyType, Pairs, RequestItem } from "../types"
 import { extractPathParams } from "../internals/extract-path-params"
 
 export type InitialRequestItem = Omit<RequestItem, "requestId">
@@ -9,20 +9,21 @@ const defaultInitialState: InitialRequestItem = {
 	url: "https://dummyjson.com/product",
 	method: "GET",
 	headers: [],
-	body: undefined,
 	pathParams: [],
 	queryParams: []
 }
 
 export const createRequestItem = (data: InitialRequestItem): RequestItem => {
+	// @ts-ignore
 	return {
 		url: data.url,
 		method: data.method,
 		headers: data.headers,
-		body: data.body,
 		queryParams: [],
 		pathParams: [],
-		requestId: nanoid()
+		requestId: nanoid(),
+		bodyType: data.bodyType,
+		body: data.body
 	}
 }
 
@@ -49,8 +50,6 @@ export const createRequestStore = (initialState = defaultInitialState) => {
 		onUrlChange(newUrl: string) {
 			update((state) => {
 				state.url = newUrl
-				// state.pathParams = concilePathParamsWithUrl(newUrl, state.pathParams)
-				// state.queryParams = extractQueryParams(newUrl)
 				return state
 			})
 		},
@@ -69,6 +68,33 @@ export const createRequestStore = (initialState = defaultInitialState) => {
 		onBodyChange(body: any) {
 			update((state) => {
 				state.body = body
+				return state
+			})
+		},
+		onFormBodyChange(pair: Pairs[number], index: number) {
+			update((state) => {
+				if (
+					state.bodyType === "multipart/form-data" ||
+					state.bodyType === "x-www-form-urlencoded"
+				) {
+					state.body = handlePairsChange(state.body, pair, index)
+				}
+				return state
+			})
+		},
+		onBodyTypeChange(bodyType: BodyType | undefined) {
+			update((state) => {
+				if (!bodyType) {
+					state.bodyType = undefined
+					state.body = undefined
+				} else if (bodyType === "text" || bodyType === "json" || bodyType === "yaml") {
+					state.body = ""
+				} else if (bodyType === "multipart/form-data" || bodyType === "x-www-form-urlencoded") {
+					state.body = []
+				} else {
+					state.body = undefined
+				}
+				state.bodyType = bodyType
 				return state
 			})
 		}
