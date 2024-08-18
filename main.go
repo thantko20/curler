@@ -32,6 +32,7 @@ func main() {
 		Windows: &windows.Options{
 			Theme: windows.Light,
 		},
+		Fullscreen: true,
 	})
 
 	if err != nil {

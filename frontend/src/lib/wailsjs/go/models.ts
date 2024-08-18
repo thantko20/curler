@@ -1,11 +1,11 @@
 export namespace request {
 	
-	export class nameValuePair {
+	export class NameValuePair {
 	    name: string;
 	    value: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new nameValuePair(source);
+	        return new NameValuePair(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -16,10 +16,11 @@ export namespace request {
 	}
 	export class Request {
 	    method: string;
-	    headers: {[key: string]: string};
+	    headers: NameValuePair[];
+	    formattedHeaders: {[key: string]: string};
 	    url: string;
 	    body: any;
-	    queryParams: nameValuePair[];
+	    queryParams: NameValuePair[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Request(source);
@@ -28,10 +29,11 @@ export namespace request {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.method = source["method"];
-	        this.headers = source["headers"];
+	        this.headers = this.convertValues(source["headers"], NameValuePair);
+	        this.formattedHeaders = source["formattedHeaders"];
 	        this.url = source["url"];
 	        this.body = source["body"];
-	        this.queryParams = this.convertValues(source["queryParams"], nameValuePair);
+	        this.queryParams = this.convertValues(source["queryParams"], NameValuePair);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
