@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/thantko20/curler/curler"
+	"github.com/thantko20/curler/pkgs/request"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx            context.Context
+	requestService request.Service
 }
 
 // NewApp creates a new App application struct
@@ -28,8 +29,8 @@ func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
-func (a *App) Send(requestOptions *curler.RequestOptions) curler.Response {
-	result, err := curler.Curl(*requestOptions)
+func (a *App) Send(request request.Request) *request.Response {
+	result, err := a.requestService.Send(request)
 	if err != nil {
 		panic(err)
 	}

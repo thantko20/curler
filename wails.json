@@ -2,13 +2,14 @@
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "curler",
   "outputfilename": "curler",
-  "frontend:install": "npm install",
-  "frontend:build": "npm run build",
-  "frontend:dev:watcher": "npm run dev",
+  "build:dir": "gui",
+  "frontend:install": "bun install",
+  "frontend:build": "bun run build",
+  "frontend:dev:watcher": "bun run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
     "name": "Thant Ko Zaw",
     "email": "thantmkou10@gmail.com"
   },
-  "wailsjsdir": "./frontend/src/lib"
+  "wailsjsdir": "./gui/src/lib"
 }

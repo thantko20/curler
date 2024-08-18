@@ -1,4 +1,3 @@
-import { DefaultHeaders } from "./constants"
 import type { SendReturn, SendOptions, SuccessSendReturn, Output } from "./types"
 
 export const send = async (opts: SendOptions): Promise<SendReturn> => {
