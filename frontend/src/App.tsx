@@ -1,106 +1,141 @@
-import { useState } from "react"
+import { useReducer, useState } from "react"
 import { Button } from "./components/ui/button"
 import { Send } from "./lib/wailsjs/go/main/App"
 import { request } from "./lib/wailsjs/go/models"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "./components/ui/select"
+import { Input } from "./components/ui/input"
+import { ResponseOutput } from "./components/response-output"
+import { CRequest, CResponse } from "./types"
 
-type ContentType =
-  | "application/json"
-  | "multipart/form-data"
-  | "application/x-www-form-urlencoded"
-  | "text/plain"
+type Action =
+  | {
+      type: "UPDATE_URL"
+      payload: string
+    }
+  | {
+      type: "UPDATE_METHOD"
+      payload: string
+    }
 
-type MultipartFormdataValInfo = {
-  value: string
-} & (
-  | {
-      valueType: "text"
-      filename?: never
-      mimeType?: string
-    }
-  | {
-      valueType: "file"
-      filename: string
-      mimeType: string
-    }
-)
-
-type NameValuePair = {
-  name: string
-  value: string
-}
-
-type MyRequest = {
-  url: string
-  method: string
-  headers: NameValuePair[]
-  queryParams: NameValuePair[]
-} & (
-  | {
-      contentType: Extract<ContentType, "application/json">
-      body: string
-    }
-  | {
-      contentType: Extract<ContentType, "multipart/form-data">
-      body: Record<string, MultipartFormdataValInfo>
-    }
-  | {
-      contentType: Extract<ContentType, "application/x-www-form-urlencoded">
-      body: NameValuePair[]
-    }
-  | {
-      contentType?: undefined
-      body?: unknown
-    }
-)
-
-type MyResponse = request.Response & {
-  decodedBody: string
+function cRequestReducer(state: CRequest, action: Action): CRequest {
+  switch (action.type) {
+    case "UPDATE_URL":
+      return { ...state, url: action.payload }
+    case "UPDATE_METHOD":
+      return { ...state, method: action.payload }
+    default:
+      return state
+  }
 }
 
 function App() {
-  const [req] = useState<MyRequest>({
-    url: "https://dummyjson.com/product",
+  const [req, dispatch] = useReducer(cRequestReducer, {
+    url: "https://dummyjson.com/products",
     method: "GET",
     headers: [],
     queryParams: []
   })
 
-  const [res, setRes] = useState<MyResponse | null>(null)
+  const [res, setRes] = useState<CResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function sendRequest() {
-    const myRequest = new request.Request()
-    myRequest.url = req.url
-    myRequest.method = req.method
-    myRequest.headers = req.headers
-    myRequest.queryParams = req.queryParams
-    myRequest.body = req.body
+  async function sendRequest() {
+    setError(null)
+    setIsLoading(true)
+    try {
+      const myRequest = new request.Request()
+      myRequest.url = req.url
+      myRequest.method = req.method
+      myRequest.headers = req.headers
+      myRequest.queryParams = req.queryParams
+      myRequest.body = req.body
 
-    Send(myRequest)
-      .then((result) => setRes({ ...result, decodedBody: atob(result.body) }))
-      .catch(console.error)
-  }
-
-  function generateImageUrlFromBinaryString(input: string) {
-    if (!res) return ""
-    const byteArray = new Uint8Array(input.length)
-    for (let i = 0; i < input.length; i++) {
-      byteArray[i] = input.charCodeAt(i)
+      const result = await Send(myRequest)
+      const decodedBody = atob(result.body)
+      console.log({ decodedBody, result })
+      setRes({ ...result, decodedBody })
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message)
+      }
+      console.error(error)
+    } finally {
+      setIsLoading(false)
     }
-    const blob = new Blob([byteArray], { type: res.contentType })
-    return URL.createObjectURL(blob)
   }
 
   return (
-    <>
-      <Button onClick={sendRequest}>Click Me</Button>
-      {res?.contentType.startsWith("image/") ? (
-        <img src={generateImageUrlFromBinaryString(res.decodedBody)} />
+    <div className="p-4">
+      <RequestTopSection
+        url={req.url}
+        method={req.method}
+        onClickSend={sendRequest}
+        onMethodChange={(value) =>
+          dispatch({ type: "UPDATE_METHOD", payload: value })
+        }
+        onUrlChange={(value) =>
+          dispatch({ type: "UPDATE_URL", payload: value })
+        }
+      />
+      {isLoading ? <div>Loading...</div> : null}
+      {error ? <div>{error}</div> : null}
+      {res ? (
+        <ResponseOutput response={res} height="400px" className="mt-4" />
       ) : null}
-      {res?.contentType.startsWith("application/json") ? (
-        <pre>{JSON.stringify(JSON.parse(res.decodedBody), null, 2)}</pre>
-      ) : null}
-    </>
+    </div>
   )
 }
 
 export default App
+
+type TopSectionProps = {
+  url: string
+  method: string
+  onClickSend: () => void
+  onMethodChange: (method: string) => void
+  onUrlChange: (url: string) => void
+}
+
+const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const
+
+function RequestTopSection(props: TopSectionProps) {
+  const { url, method, onClickSend, onMethodChange, onUrlChange } = props
+  return (
+    <div className="flex gap-2">
+      <Select onValueChange={onMethodChange} value={method}>
+        <SelectTrigger className="max-w-28">
+          <SelectValue placeholder="Method" />
+        </SelectTrigger>
+        <SelectContent>
+          {httpMethods.map((m) => (
+            <SelectItem key={m} value={m}>
+              {m}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <form
+        className="flex gap-2 w-full"
+        onSubmit={(e) => {
+          e.preventDefault()
+          onClickSend()
+        }}
+      >
+        <Input
+          value={url}
+          onChange={(e) => onUrlChange(e.currentTarget.value)}
+        />
+        <Button type="submit" className="min-w-24">
+          Send
+        </Button>
+      </form>
+    </div>
+  )
+}
