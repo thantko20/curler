@@ -1,4 +1,4 @@
-import { useReducer, useState } from "react"
+import { useState } from "react"
 import { Button } from "./components/ui/button"
 import {
   Select,
@@ -16,65 +16,12 @@ import {
 } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { sendRequest } from "./modules/requests/api"
-import { TRequest, TResponseWithDecodedBody } from "./modules/requests/types"
-import { RequestParamsTable } from "./modules/requests/components/request-params-table"
-import { NameValuePair } from "./types"
-
-type Action =
-  | {
-      type: "UPDATE_URL"
-      payload: string
-    }
-  | {
-      type: "UPDATE_METHOD"
-      payload: string
-    }
-  | {
-      type: "UPDATE_PARAMS"
-      payload: {
-        index: number | null
-        param: NameValuePair
-      }
-    }
-
-function requestReducer(state: TRequest, action: Action): TRequest {
-  switch (action.type) {
-    case "UPDATE_URL":
-      return { ...state, url: action.payload }
-    case "UPDATE_METHOD":
-      return { ...state, method: action.payload }
-    case "UPDATE_PARAMS": {
-      const { index, param } = action.payload
-      if (index === null) {
-        return { ...state, queryParams: [...state.queryParams, param] }
-      }
-      if (param.name || param.value) {
-        return {
-          ...state,
-          queryParams: [
-            ...state.queryParams.slice(0, index),
-            param,
-            ...state.queryParams.slice(index + 1)
-          ]
-        }
-      }
-
-      // remove the param
-      return {
-        ...state,
-        queryParams: [
-          ...state.queryParams.slice(0, index),
-          ...state.queryParams.slice(index + 1)
-        ]
-      }
-    }
-    default:
-      return state
-  }
-}
+import { TResponseWithDecodedBody } from "./modules/requests/types"
+import { useRequest } from "./modules/requests/use-request"
+import { KeyValueTable } from "./modules/requests/components/key-value-table"
 
 function App() {
-  const [req, dispatch] = useReducer(requestReducer, {
+  const [req, dispatch] = useRequest({
     url: "https://dummyjson.com/products",
     method: "GET",
     headers: [],
@@ -135,7 +82,16 @@ function App() {
           <ResizablePanel>
             <Tabs value={tab}>
               <TabsContent value="query-params">
-                <RequestParamsTable
+                <KeyValueTable
+                  items={req.queryParams}
+                  onItemChange={(index, newItem) =>
+                    dispatch({
+                      type: "UPDATE_PARAMS",
+                      payload: { index, param: newItem }
+                    })
+                  }
+                />
+                {/* <RequestParamsTable
                   onParamChange={(index, newPair) => {
                     dispatch({
                       type: "UPDATE_PARAMS",
@@ -143,7 +99,7 @@ function App() {
                     })
                   }}
                   queryParams={req.queryParams}
-                />
+                /> */}
               </TabsContent>
               <TabsContent value="body">body</TabsContent>
               <TabsContent value="headers">headers</TabsContent>

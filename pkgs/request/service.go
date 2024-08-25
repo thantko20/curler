@@ -48,6 +48,16 @@ func (s *Service) Send(opts Request) (*Response, error) {
 	body := &bytes.Buffer{}
 	bw := BodyWriter{RequestBody: opts.Body, ContentType: contentType}
 	bw.Write(body)
+
+	// construct query string from queryparams
+	queryParams := url.Values{}
+	for _, v := range opts.QueryParams {
+		if v.Enabled {
+			queryParams.Add(v.Name, v.Value)
+		}
+	}
+	opts.Url = opts.Url + "?" + queryParams.Encode()
+
 	request, err := http.NewRequest(opts.Method, opts.Url, body)
 	if err != nil {
 		return nil, err
