@@ -10,8 +10,14 @@ import {
   SelectValue
 } from "./components/ui/select"
 import { Input } from "./components/ui/input"
-import { ResponseOutput } from "./components/response-output"
 import { CRequest, CResponse } from "./types"
+import { ResponseOutput } from "./components/response-output"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup
+} from "@/components/ui/resizable"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type Action =
   | {
@@ -71,24 +77,52 @@ function App() {
     }
   }
 
+  const [tab, setTab] = useState("query-params")
+
   return (
-    <div className="p-4">
-      <RequestTopSection
-        url={req.url}
-        method={req.method}
-        onClickSend={sendRequest}
-        onMethodChange={(value) =>
-          dispatch({ type: "UPDATE_METHOD", payload: value })
-        }
-        onUrlChange={(value) =>
-          dispatch({ type: "UPDATE_URL", payload: value })
-        }
-      />
+    <div className="p-4 flex flex-col h-screen">
+      <div className="flex-shrink-0">
+        <RequestTopSection
+          url={req.url}
+          method={req.method}
+          isLoading={isLoading}
+          onClickSend={sendRequest}
+          onMethodChange={(value) =>
+            dispatch({ type: "UPDATE_METHOD", payload: value })
+          }
+          onUrlChange={(value) =>
+            dispatch({ type: "UPDATE_URL", payload: value })
+          }
+        />
+      </div>
       {isLoading ? <div>Loading...</div> : null}
       {error ? <div>{error}</div> : null}
-      {res ? (
-        <ResponseOutput response={res} height="400px" className="mt-4" />
-      ) : null}
+      <div className="h-full">
+        <Tabs className="w-[400px]" value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="query-params">Params</TabsTrigger>
+            <TabsTrigger value="body">Body</TabsTrigger>
+            <TabsTrigger value="headers">Headers</TabsTrigger>
+            <TabsTrigger value="auth">Auth</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <ResizablePanelGroup direction="vertical">
+          <ResizablePanel>
+            <Tabs value={tab}>
+              <TabsContent value="query-params">query params</TabsContent>
+              <TabsContent value="body">body</TabsContent>
+              <TabsContent value="headers">headers</TabsContent>
+              <TabsContent value="auth">auth</TabsContent>
+            </Tabs>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel minSize={10}>
+            {res ? (
+              <ResponseOutput response={res} className="mt-4 h-full" />
+            ) : null}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   )
 }
@@ -101,12 +135,20 @@ type TopSectionProps = {
   onClickSend: () => void
   onMethodChange: (method: string) => void
   onUrlChange: (url: string) => void
+  isLoading?: boolean
 }
 
 const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const
 
 function RequestTopSection(props: TopSectionProps) {
-  const { url, method, onClickSend, onMethodChange, onUrlChange } = props
+  const {
+    url,
+    method,
+    onClickSend,
+    onMethodChange,
+    onUrlChange,
+    isLoading = false
+  } = props
   return (
     <div className="flex gap-2">
       <Select onValueChange={onMethodChange} value={method}>
@@ -132,7 +174,7 @@ function RequestTopSection(props: TopSectionProps) {
           value={url}
           onChange={(e) => onUrlChange(e.currentTarget.value)}
         />
-        <Button type="submit" className="min-w-24">
+        <Button type="submit" className="min-w-24" disabled={isLoading}>
           Send
         </Button>
       </form>
