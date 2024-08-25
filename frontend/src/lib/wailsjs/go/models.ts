@@ -3,6 +3,7 @@ export namespace request {
 	export class NameValuePair {
 	    name: string;
 	    value: string;
+	    enabled: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new NameValuePair(source);
@@ -12,6 +13,7 @@ export namespace request {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.name = source["name"];
 	        this.value = source["value"];
+	        this.enabled = source["enabled"];
 	    }
 	}
 	export class Request {

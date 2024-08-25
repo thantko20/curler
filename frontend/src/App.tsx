@@ -1,7 +1,5 @@
 import { useReducer, useState } from "react"
 import { Button } from "./components/ui/button"
-import { Send } from "./lib/wailsjs/go/main/App"
-import { request } from "./lib/wailsjs/go/models"
 import {
   Select,
   SelectContent,
@@ -10,14 +8,17 @@ import {
   SelectValue
 } from "./components/ui/select"
 import { Input } from "./components/ui/input"
-import { CRequest, CResponse } from "./types"
-import { ResponseOutput } from "./components/response-output"
+import { ResponseOutput } from "./modules/requests/components/response-output"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup
 } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { sendRequest } from "./modules/requests/api"
+import { TRequest, TResponseWithDecodedBody } from "./modules/requests/types"
+import { RequestParamsTable } from "./modules/requests/components/request-params-table"
+import { NameValuePair } from "./types"
 
 type Action =
   | {
@@ -28,44 +29,68 @@ type Action =
       type: "UPDATE_METHOD"
       payload: string
     }
+  | {
+      type: "UPDATE_PARAMS"
+      payload: {
+        index: number | null
+        param: NameValuePair
+      }
+    }
 
-function cRequestReducer(state: CRequest, action: Action): CRequest {
+function requestReducer(state: TRequest, action: Action): TRequest {
   switch (action.type) {
     case "UPDATE_URL":
       return { ...state, url: action.payload }
     case "UPDATE_METHOD":
       return { ...state, method: action.payload }
+    case "UPDATE_PARAMS": {
+      const { index, param } = action.payload
+      if (index === null) {
+        return { ...state, queryParams: [...state.queryParams, param] }
+      }
+      if (param.name || param.value) {
+        return {
+          ...state,
+          queryParams: [
+            ...state.queryParams.slice(0, index),
+            param,
+            ...state.queryParams.slice(index + 1)
+          ]
+        }
+      }
+
+      // remove the param
+      return {
+        ...state,
+        queryParams: [
+          ...state.queryParams.slice(0, index),
+          ...state.queryParams.slice(index + 1)
+        ]
+      }
+    }
     default:
       return state
   }
 }
 
 function App() {
-  const [req, dispatch] = useReducer(cRequestReducer, {
+  const [req, dispatch] = useReducer(requestReducer, {
     url: "https://dummyjson.com/products",
     method: "GET",
     headers: [],
     queryParams: []
   })
 
-  const [res, setRes] = useState<CResponse | null>(null)
+  const [res, setRes] = useState<TResponseWithDecodedBody | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function sendRequest() {
+  async function onSendRequest() {
     setError(null)
     setIsLoading(true)
     try {
-      const myRequest = new request.Request()
-      myRequest.url = req.url
-      myRequest.method = req.method
-      myRequest.headers = req.headers
-      myRequest.queryParams = req.queryParams
-      myRequest.body = req.body
-
-      const result = await Send(myRequest)
+      const result = await sendRequest(req)
       const decodedBody = atob(result.body)
-      console.log({ decodedBody, result })
       setRes({ ...result, decodedBody })
     } catch (error) {
       if (error instanceof Error) {
@@ -86,7 +111,7 @@ function App() {
           url={req.url}
           method={req.method}
           isLoading={isLoading}
-          onClickSend={sendRequest}
+          onClickSend={onSendRequest}
           onMethodChange={(value) =>
             dispatch({ type: "UPDATE_METHOD", payload: value })
           }
@@ -99,7 +124,7 @@ function App() {
       {error ? <div>{error}</div> : null}
       <div className="h-full">
         <Tabs className="w-[400px]" value={tab} onValueChange={setTab}>
-          <TabsList>
+          <TabsList className="mt-4">
             <TabsTrigger value="query-params">Params</TabsTrigger>
             <TabsTrigger value="body">Body</TabsTrigger>
             <TabsTrigger value="headers">Headers</TabsTrigger>
@@ -109,17 +134,25 @@ function App() {
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel>
             <Tabs value={tab}>
-              <TabsContent value="query-params">query params</TabsContent>
+              <TabsContent value="query-params">
+                <RequestParamsTable
+                  onParamChange={(index, newPair) => {
+                    dispatch({
+                      type: "UPDATE_PARAMS",
+                      payload: { index, param: newPair }
+                    })
+                  }}
+                  queryParams={req.queryParams}
+                />
+              </TabsContent>
               <TabsContent value="body">body</TabsContent>
               <TabsContent value="headers">headers</TabsContent>
               <TabsContent value="auth">auth</TabsContent>
             </Tabs>
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel minSize={10}>
-            {res ? (
-              <ResponseOutput response={res} className="mt-4 h-full" />
-            ) : null}
+          <ResizablePanel className="py-4">
+            {res ? <ResponseOutput response={res} className="h-full" /> : null}
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

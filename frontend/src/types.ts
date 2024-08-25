@@ -24,6 +24,7 @@ export type MultipartFormdataValInfo = {
 export type NameValuePair = {
   name: string
   value: string
+  enabled: boolean
 }
 
 export type CRequest = {

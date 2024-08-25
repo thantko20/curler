@@ -1,8 +1,9 @@
 package request
 
 type NameValuePair struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name    string `json:"name"`
+	Value   string `json:"value"`
+	Enabled bool   `json:"enabled"`
 }
 
 type MultipartFormdataVal struct {
