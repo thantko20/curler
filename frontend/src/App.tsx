@@ -21,7 +21,12 @@ import { useRequest } from "./modules/requests/use-request"
 import { KeyValueTable } from "./modules/requests/components/key-value-table"
 
 function App() {
-  const [req, dispatch] = useRequest({
+  const {
+    request: req,
+    updateUrl,
+    updateMethod,
+    updateKVPair
+  } = useRequest({
     url: "https://dummyjson.com/products",
     method: "GET",
     headers: [],
@@ -59,12 +64,8 @@ function App() {
           method={req.method}
           isLoading={isLoading}
           onClickSend={onSendRequest}
-          onMethodChange={(value) =>
-            dispatch({ type: "UPDATE_METHOD", payload: value })
-          }
-          onUrlChange={(value) =>
-            dispatch({ type: "UPDATE_URL", payload: value })
-          }
+          onMethodChange={(value) => updateMethod(value)}
+          onUrlChange={(value) => updateUrl(value)}
         />
       </div>
       {isLoading ? <div>Loading...</div> : null}
@@ -84,25 +85,16 @@ function App() {
               <TabsContent value="query-params">
                 <KeyValueTable
                   items={req.queryParams}
-                  onItemChange={(index, newItem) =>
-                    dispatch({
-                      type: "UPDATE_PARAMS",
-                      payload: { index, param: newItem }
-                    })
-                  }
+                  onItemChange={updateKVPair.bind(null, "queryParams")}
                 />
-                {/* <RequestParamsTable
-                  onParamChange={(index, newPair) => {
-                    dispatch({
-                      type: "UPDATE_PARAMS",
-                      payload: { index, param: newPair }
-                    })
-                  }}
-                  queryParams={req.queryParams}
-                /> */}
               </TabsContent>
               <TabsContent value="body">body</TabsContent>
-              <TabsContent value="headers">headers</TabsContent>
+              <TabsContent value="headers">
+                <KeyValueTable
+                  items={req.headers}
+                  onItemChange={updateKVPair.bind(null, "headers")}
+                />
+              </TabsContent>
               <TabsContent value="auth">auth</TabsContent>
             </Tabs>
           </ResizablePanel>

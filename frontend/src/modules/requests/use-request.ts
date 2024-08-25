@@ -4,6 +4,15 @@ import { useReducer } from "react"
 import { NameValuePair } from "@/types"
 import { TRequest } from "./types"
 
+type UpdateKVPairAction = {
+  type: "UPDATE_KV_PAIR"
+  payload: {
+    field: "queryParams" | "headers"
+    index: number | null
+    item: NameValuePair
+  }
+}
+
 type Action =
   | {
       type: "UPDATE_URL"
@@ -13,13 +22,7 @@ type Action =
       type: "UPDATE_METHOD"
       payload: string
     }
-  | {
-      type: "UPDATE_PARAMS"
-      payload: {
-        index: number | null
-        param: NameValuePair
-      }
-    }
+  | UpdateKVPairAction
 
 function requestReducer(state: TRequest, action: Action): TRequest {
   switch (action.type) {
@@ -27,28 +30,31 @@ function requestReducer(state: TRequest, action: Action): TRequest {
       return { ...state, url: action.payload }
     case "UPDATE_METHOD":
       return { ...state, method: action.payload }
-    case "UPDATE_PARAMS": {
-      const { index, param } = action.payload
+    case "UPDATE_KV_PAIR": {
+      const { field, index, item } = action.payload
+      const currentItems = state[field]
+
       if (index === null) {
-        return { ...state, queryParams: [...state.queryParams, param] }
+        return { ...state, [field]: [...currentItems, item] }
       }
-      if (param.name || param.value) {
+
+      if (item.name || item.value) {
         return {
           ...state,
-          queryParams: [
-            ...state.queryParams.slice(0, index),
-            param,
-            ...state.queryParams.slice(index + 1)
+          [field]: [
+            ...currentItems.slice(0, index),
+            item,
+            ...currentItems.slice(index + 1)
           ]
         }
       }
 
-      // remove the param
+      // remove the item
       return {
         ...state,
-        queryParams: [
-          ...state.queryParams.slice(0, index),
-          ...state.queryParams.slice(index + 1)
+        [field]: [
+          ...currentItems.slice(0, index),
+          ...currentItems.slice(index + 1)
         ]
       }
     }
@@ -58,5 +64,28 @@ function requestReducer(state: TRequest, action: Action): TRequest {
 }
 
 export function useRequest(initialState: TRequest) {
-  return useReducer(requestReducer, initialState)
+  const [request, dispatch] = useReducer(requestReducer, initialState)
+
+  const updateUrl = (url: string) =>
+    dispatch({ type: "UPDATE_URL", payload: url })
+
+  const updateMethod = (method: string) =>
+    dispatch({ type: "UPDATE_METHOD", payload: method })
+
+  const updateKVPair = (
+    field: "queryParams" | "headers",
+    index: number | null,
+    item: NameValuePair
+  ) =>
+    dispatch({
+      type: "UPDATE_KV_PAIR",
+      payload: { field, index, item }
+    })
+
+  return {
+    request,
+    updateUrl,
+    updateMethod,
+    updateKVPair
+  }
 }

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -53,7 +54,7 @@ func (s *Service) Send(opts Request) (*Response, error) {
 	queryParams := url.Values{}
 	for _, v := range opts.QueryParams {
 		if v.Enabled {
-			queryParams.Add(v.Name, v.Value)
+			queryParams.Add(strings.TrimSpace(v.Name), strings.TrimSpace(v.Value))
 		}
 	}
 	opts.Url = opts.Url + "?" + queryParams.Encode()
@@ -63,8 +64,8 @@ func (s *Service) Send(opts Request) (*Response, error) {
 		return nil, err
 	}
 
-	for k, v := range opts.FormattedHeaders {
-		request.Header.Set(k, v)
+	for _, v := range opts.Headers {
+		request.Header.Add(v.Name, v.Value)
 	}
 
 	start := time.Now()
