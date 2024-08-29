@@ -23,6 +23,11 @@ type Action =
       payload: string
     }
   | UpdateKVPairAction
+  | {
+      type: "UPDATE_BODY"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload: { contentType: string; value: any }
+    }
 
 function requestReducer(state: TRequest, action: Action): TRequest {
   switch (action.type) {
@@ -58,6 +63,14 @@ function requestReducer(state: TRequest, action: Action): TRequest {
         ]
       }
     }
+    case "UPDATE_BODY": {
+      const { contentType, value } = action.payload
+      return {
+        ...state,
+        body: value,
+        contentType
+      }
+    }
     default:
       return state
   }
@@ -82,10 +95,16 @@ export function useRequest(initialState: TRequest) {
       payload: { field, index, item }
     })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updateBody = (contentType: string, value: any) =>
+    dispatch({ type: "UPDATE_BODY", payload: { contentType, value } })
+
   return {
     request,
     updateUrl,
     updateMethod,
-    updateKVPair
+    updateKVPair,
+    updateBody,
+    dispatch
   }
 }

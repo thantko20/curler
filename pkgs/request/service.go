@@ -3,7 +3,6 @@ package request
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -44,12 +43,6 @@ type Response struct {
 type Service struct{}
 
 func (s *Service) Send(opts Request) (*Response, error) {
-	contentType := ContentType(opts.FormattedHeaders["Content-Type"])
-
-	body := &bytes.Buffer{}
-	bw := BodyWriter{RequestBody: opts.Body, ContentType: contentType}
-	bw.Write(body)
-
 	// construct query string from queryparams
 	queryParams := url.Values{}
 	for _, v := range opts.QueryParams {
@@ -59,14 +52,27 @@ func (s *Service) Send(opts Request) (*Response, error) {
 	}
 	opts.Url = opts.Url + "?" + queryParams.Encode()
 
+	headers := http.Header{}
+
+	for _, v := range opts.Headers {
+		headers.Add(v.Name, v.Value)
+	}
+
+	contentType := ContentType(opts.ContentType)
+
+	if contentType != "" {
+		headers.Set("Content-Type", string(contentType))
+	}
+
+	body := &bytes.Buffer{}
+	bw := BodyWriter{RequestBody: opts.Body, ContentType: contentType}
+	bw.Write(body)
+
 	request, err := http.NewRequest(opts.Method, opts.Url, body)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, v := range opts.Headers {
-		request.Header.Add(v.Name, v.Value)
-	}
+	request.Header = headers
 
 	start := time.Now()
 	res, err := http.DefaultClient.Do(request)
@@ -100,9 +106,13 @@ type BodyWriter struct {
 func (b *BodyWriter) Write(p *bytes.Buffer) error {
 
 	if b.ContentType == contentTypeJson {
-		if err := json.Unmarshal(p.Bytes(), &b.RequestBody); err != nil {
+		_, err := p.Write([]byte(b.RequestBody.(string)))
+		if err != nil {
 			return err
 		}
+		// if err := json.Unmarshal(p.Bytes(), &b.RequestBody); err != nil {
+		// 	return err
+		// }
 	} else if b.ContentType == contentTypeUrlEncodedForm {
 		params := url.Values{}
 		if v, ok := b.RequestBody.([]NameValuePair); ok {

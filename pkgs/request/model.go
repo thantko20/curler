@@ -20,4 +20,5 @@ type Request struct {
 	Url              string            `json:"url"`
 	Body             interface{}       `json:"body"`
 	QueryParams      []NameValuePair   `json:"queryParams"`
+	ContentType      string            `json:"contentType"`
 }

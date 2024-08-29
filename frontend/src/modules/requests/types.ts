@@ -5,7 +5,9 @@ export type TRequest = {
   method: string
   headers: NameValuePair[]
   queryParams: NameValuePair[]
-  body?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any
+  contentType?: string
 }
 
 export type TResponse = {

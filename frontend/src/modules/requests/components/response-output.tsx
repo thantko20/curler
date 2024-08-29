@@ -2,7 +2,7 @@ import { CResponse } from "@/types"
 import { useCodeMirror } from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
 import { cn } from "@/lib/utils/cn"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 type Props = {
   response: CResponse
@@ -24,11 +24,17 @@ export const ResponseOutput = ({
   width,
   height = "100%"
 }: Props) => {
+  const value = useMemo(() => {
+    if (response.contentType.startsWith("application/json")) {
+      return JSON.stringify(JSON.parse(response.decodedBody), null, 2)
+    }
+    return response.decodedBody
+  }, [response.decodedBody, response.contentType])
   const editor = useRef<HTMLDivElement>(null)
   const { setContainer } = useCodeMirror({
     container: editor.current,
     extensions,
-    value: JSON.stringify(JSON.parse(response.decodedBody), null, 2),
+    value,
     editable: false,
     width,
     height

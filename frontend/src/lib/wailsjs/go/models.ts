@@ -23,6 +23,7 @@ export namespace request {
 	    url: string;
 	    body: any;
 	    queryParams: NameValuePair[];
+	    contentType: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Request(source);
@@ -36,6 +37,7 @@ export namespace request {
 	        this.url = source["url"];
 	        this.body = source["body"];
 	        this.queryParams = this.convertValues(source["queryParams"], NameValuePair);
+	        this.contentType = source["contentType"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
