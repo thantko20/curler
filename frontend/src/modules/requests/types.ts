@@ -7,12 +7,16 @@ export type TRequest = {
   method: string
   headers: NameValuePair[]
   queryParams: NameValuePair[]
-  /**
-   * JSON format
-   */
-  body?: JSON
-  contentType?: string
-}
+} & (
+  | { body?: undefined; contentType?: undefined }
+  | { body: JSON; contentType: "application/json" }
+  | { body: NameValuePair[]; contentType: "application/x-www-form-urlencoded" }
+  | {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      body: any
+      contentType: "multipart/form-data"
+    }
+)
 
 export type TResponse = {
   /**

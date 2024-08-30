@@ -7,10 +7,24 @@ import {
 } from "@/components/ui/select"
 import { TRequest } from "../types"
 import { BodyCodeEditor } from "./body-code-editor"
+import { KeyValueTable } from "./key-value-table"
+import { useRequest } from "../use-request"
+
+const textContentTypes = ["text/plain", "application/json"]
+
+function textContentTypeToLanguage(contentType: string) {
+  switch (contentType) {
+    case "text/plain":
+    default:
+      return "text"
+    case "application/json":
+      return "json"
+  }
+}
 
 type Props = {
   request: TRequest
-  onBodyChange: (value: string) => void
+  onBodyChange: ReturnType<typeof useRequest>["updateBody"]
   onBodyTypeChange: (value: string) => void
 }
 
@@ -42,12 +56,24 @@ export const RequestBodySection = ({
           <SelectItem value="multipart/form-data">Multipart Form</SelectItem>
         </SelectContent>
       </Select>
-      {request.contentType === "application/json" ? (
+      {textContentTypes.includes(request.contentType ?? "") ? (
         <BodyCodeEditor
           value={request.body || ""}
-          language="json"
+          language={textContentTypeToLanguage(request.contentType ?? "")}
           onChange={onBodyChange}
         />
+      ) : null}
+      {request.contentType === "application/x-www-form-urlencoded" ? (
+        <KeyValueTable
+          items={request.body || []}
+          onItemChange={(index, pair) => {
+            console.log({ index, pair })
+            onBodyChange(pair, index)
+          }}
+        />
+      ) : null}
+      {request.contentType === "multipart/form-data" ? (
+        <KeyValueTable items={request.body || []} onItemChange={() => {}} />
       ) : null}
     </div>
   )

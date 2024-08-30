@@ -13,7 +13,7 @@ type UpdateKVPairAction = {
   }
 }
 
-type Action =
+export type RequestStateAction =
   | {
       type: "UPDATE_URL"
       payload: string
@@ -25,14 +25,15 @@ type Action =
   | UpdateKVPairAction
   | {
       type: "UPDATE_BODY"
-      payload: string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload: any
     }
   | {
       type: "UPDATE_BODY_TYPE"
       payload: string
     }
 
-function requestReducer(state: TRequest, action: Action): TRequest {
+function requestReducer(state: TRequest, action: RequestStateAction): TRequest {
   switch (action.type) {
     case "UPDATE_URL":
       return { ...state, url: action.payload }
@@ -75,7 +76,13 @@ function requestReducer(state: TRequest, action: Action): TRequest {
     case "UPDATE_BODY_TYPE": {
       return {
         ...state,
-        contentType: action.payload
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        contentType: action.payload as any,
+        body:
+          action.payload === "application/json" ||
+          action.payload === "text/plain"
+            ? ""
+            : undefined
       }
     }
     default:
@@ -102,8 +109,48 @@ export function useRequest(initialState: TRequest) {
       payload: { field, index, item }
     })
 
-  const updateBody = (value: string) =>
-    dispatch({ type: "UPDATE_BODY", payload: value })
+  function updateBody(value: string): void
+  function updateBody(value: NameValuePair, index: number | null): void
+  function updateBody(
+    value: NameValuePair | string,
+    index?: number | null
+  ): void {
+    if (state.contentType === "application/json" && typeof value === "string") {
+      dispatch({ type: "UPDATE_BODY", payload: value as string })
+    } else if (
+      state.contentType === "application/x-www-form-urlencoded" &&
+      typeof value !== "string"
+    ) {
+      console.log({ value, index })
+      const currentItems = state.body || []
+
+      if (index === null) {
+        dispatch({ type: "UPDATE_BODY", payload: [...currentItems, value] })
+      }
+
+      index = index!
+
+      if (value.name || value.value) {
+        dispatch({
+          type: "UPDATE_BODY",
+          payload: [
+            ...currentItems.slice(0, index),
+            value,
+            ...currentItems.slice(index + 1)
+          ]
+        })
+      }
+
+      dispatch({
+        type: "UPDATE_BODY",
+        payload: [
+          ...currentItems.slice(0, index),
+          ...currentItems.slice(index + 1)
+        ]
+      })
+    }
+    // dispatch({ type: "UPDATE_BODY", payload: value })
+  }
 
   return {
     request: state,
