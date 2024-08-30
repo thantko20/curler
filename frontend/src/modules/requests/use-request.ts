@@ -25,8 +25,11 @@ type Action =
   | UpdateKVPairAction
   | {
       type: "UPDATE_BODY"
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      payload: { contentType: string; value: any }
+      payload: string
+    }
+  | {
+      type: "UPDATE_BODY_TYPE"
+      payload: string
     }
 
 function requestReducer(state: TRequest, action: Action): TRequest {
@@ -64,11 +67,15 @@ function requestReducer(state: TRequest, action: Action): TRequest {
       }
     }
     case "UPDATE_BODY": {
-      const { contentType, value } = action.payload
       return {
         ...state,
-        body: value,
-        contentType
+        body: action.payload
+      }
+    }
+    case "UPDATE_BODY_TYPE": {
+      return {
+        ...state,
+        contentType: action.payload
       }
     }
     default:
@@ -77,7 +84,7 @@ function requestReducer(state: TRequest, action: Action): TRequest {
 }
 
 export function useRequest(initialState: TRequest) {
-  const [request, dispatch] = useReducer(requestReducer, initialState)
+  const [state, dispatch] = useReducer(requestReducer, initialState)
 
   const updateUrl = (url: string) =>
     dispatch({ type: "UPDATE_URL", payload: url })
@@ -95,12 +102,11 @@ export function useRequest(initialState: TRequest) {
       payload: { field, index, item }
     })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateBody = (contentType: string, value: any) =>
-    dispatch({ type: "UPDATE_BODY", payload: { contentType, value } })
+  const updateBody = (value: string) =>
+    dispatch({ type: "UPDATE_BODY", payload: value })
 
   return {
-    request,
+    request: state,
     updateUrl,
     updateMethod,
     updateKVPair,

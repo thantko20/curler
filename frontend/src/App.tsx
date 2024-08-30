@@ -19,7 +19,7 @@ import { sendRequest } from "./modules/requests/api"
 import { TResponseWithDecodedBody } from "./modules/requests/types"
 import { useRequest } from "./modules/requests/use-request"
 import { KeyValueTable } from "./modules/requests/components/key-value-table"
-import { BodyCodeEditor } from "./modules/requests/components/body-code-editor"
+import { RequestBodySection } from "./modules/requests/components/request-body-section"
 
 function App() {
   const {
@@ -27,7 +27,8 @@ function App() {
     updateUrl,
     updateMethod,
     updateKVPair,
-    updateBody
+    updateBody,
+    dispatch
   } = useRequest({
     url: "https://dummyjson.com/products",
     method: "GET",
@@ -91,10 +92,12 @@ function App() {
                 />
               </TabsContent>
               <TabsContent value="body">
-                <BodyCodeEditor
-                  value={req.body || ""}
-                  language="json"
-                  onChange={(value) => updateBody("application/json", value)}
+                <RequestBodySection
+                  request={req}
+                  onBodyChange={updateBody}
+                  onBodyTypeChange={(value) =>
+                    dispatch({ type: "UPDATE_BODY_TYPE", payload: value })
+                  }
                 />
               </TabsContent>
               <TabsContent value="headers">

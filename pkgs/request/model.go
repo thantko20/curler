@@ -18,7 +18,7 @@ type Request struct {
 	Headers          []NameValuePair   `json:"headers"`
 	FormattedHeaders map[string]string `json:"formattedHeaders"`
 	Url              string            `json:"url"`
-	Body             interface{}       `json:"body"`
+	Body             string            `json:"body"`
 	QueryParams      []NameValuePair   `json:"queryParams"`
 	ContentType      string            `json:"contentType"`
 }

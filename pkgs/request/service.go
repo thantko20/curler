@@ -3,6 +3,7 @@ package request
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -39,6 +40,8 @@ type Response struct {
 	Headers     http.Header `json:"headers"`
 	DurationMs  int         `json:"durationMs"`
 }
+
+type multipartFormBody map[string]MultipartFormdataVal
 
 type Service struct{}
 
@@ -99,56 +102,59 @@ func (s *Service) Send(opts Request) (*Response, error) {
 }
 
 type BodyWriter struct {
-	RequestBody interface{}
+	RequestBody string
 	ContentType
 }
 
 func (b *BodyWriter) Write(p *bytes.Buffer) error {
 
 	if b.ContentType == contentTypeJson {
-		_, err := p.Write([]byte(b.RequestBody.(string)))
+		_, err := p.Write([]byte(b.RequestBody))
 		if err != nil {
 			return err
 		}
-		// if err := json.Unmarshal(p.Bytes(), &b.RequestBody); err != nil {
-		// 	return err
-		// }
 	} else if b.ContentType == contentTypeUrlEncodedForm {
+		var body []NameValuePair
+		err := json.Unmarshal([]byte(b.RequestBody), &body)
+		if err != nil {
+			return err
+		}
 		params := url.Values{}
-		if v, ok := b.RequestBody.([]NameValuePair); ok {
-			for _, kv := range v {
-				params.Add(kv.Name, kv.Value)
-			}
+		for _, kv := range body {
+			params.Add(kv.Name, kv.Value)
 		}
 		queryString := params.Encode()
-		_, err := p.Write([]byte(queryString))
+		_, err = p.Write([]byte(queryString))
 		if err != nil {
 			return err
 		}
 	} else if b.ContentType == contentTypeMultipartForm {
-		if rb, ok := b.RequestBody.(map[string]MultipartFormdataVal); ok {
-			multipartWriter := multipart.Writer{}
-			boundary := "curler" + fmt.Sprintf("%d", time.Now().UnixNano())
-			multipartWriter.SetBoundary(boundary)
-			for k, v := range rb {
-				if v.ValueType == "text" {
-					multipartWriter.WriteField(k, v.Value)
-				} else if v.ValueType == "file" {
-					h := textproto.MIMEHeader{}
-					h.Set("Content-Disposition",
-						fmt.Sprintf("form-data; name=%q; filename=%q", k, v.Filename))
-					h.Set("Content-Type", v.MimeType)
+		var body multipartFormBody
+		err := json.Unmarshal([]byte(b.RequestBody), &body)
+		if err != nil {
+			return err
+		}
+		multipartWriter := multipart.Writer{}
+		boundary := fmt.Sprintf("curler-%d", time.Now().Unix())
+		multipartWriter.SetBoundary(boundary)
+		for k, v := range body {
+			if v.ValueType == "text" {
+				multipartWriter.WriteField(k, v.Value)
+			} else if v.ValueType == "file" {
+				h := textproto.MIMEHeader{}
+				h.Set("Content-Disposition",
+					fmt.Sprintf("form-data; name=%q; filename=%q", k, v.Filename))
+				h.Set("Content-Type", v.MimeType)
 
-					part, err := multipartWriter.CreatePart(h)
-					if err != nil {
-						return err
-					}
-					data, err := base64.StdEncoding.DecodeString(v.Value)
-					if err != nil {
-						return err
-					}
-					part.Write(data)
+				part, err := multipartWriter.CreatePart(h)
+				if err != nil {
+					return err
 				}
+				data, err := base64.StdEncoding.DecodeString(v.Value)
+				if err != nil {
+					return err
+				}
+				part.Write(data)
 			}
 		}
 	}

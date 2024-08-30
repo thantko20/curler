@@ -21,7 +21,7 @@ export namespace request {
 	    headers: NameValuePair[];
 	    formattedHeaders: {[key: string]: string};
 	    url: string;
-	    body: any;
+	    body: string;
 	    queryParams: NameValuePair[];
 	    contentType: string;
 	

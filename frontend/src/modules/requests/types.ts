@@ -1,12 +1,16 @@
 import { NameValuePair } from "@/types"
 
+type JSON = string
+
 export type TRequest = {
   url: string
   method: string
   headers: NameValuePair[]
   queryParams: NameValuePair[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body?: any
+  /**
+   * JSON format
+   */
+  body?: JSON
   contentType?: string
 }
 
